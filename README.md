@@ -1,8 +1,8 @@
 ![Block42](http://assets.block42.world/images/icons/block42_logo_200.png)
 
-# Landpot Web dApp
+# Landpot Web DApp
 
-A complete web dApp for land jackpot buying.
+A complete web DApp for land jackpot buying.
 
 There's 42 lands in total and ONE land is released each week. A land is split into 42 plots and all players can join 1 of 4 teams and bid on one or more plots with ethers. Each team has different reward divided rules. (More detail of each team will be finalized)
 
@@ -19,6 +19,7 @@ Please note that this is still in prototype and under heavy development. The fin
 - Prototype from [Truffle Box React](https://github.com/truffle-box/react-box)
 - Bootstrap theme and styled
 - Web3.js 1.0 beta 35
+- Using [OpenZeppelin 1.11.0](https://github.com/OpenZeppelin/openzeppelin-solidity) solidity framework for best security and stability
 <!-- - A inlined version for websites can only use iframe (such as Wix) -->
 
 ## Getting Started
