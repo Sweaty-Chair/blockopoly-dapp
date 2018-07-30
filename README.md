@@ -15,8 +15,8 @@ The ownership of the land is a ERC721 token and will be owned by the owner in li
 Please note that this is still in prototype and under heavy development. The final product may be subject to a number of quality assurance tests to verify conformance with specifications.
 
 <!-- - Working in both Main Ethereum Network and Ropsten Test Network -->
-- Prototype from [Truffle Box React](https://github.com/truffle-box/react-box)
 <!-- - Working with MetaMask, local and Infura nodes are commented and can be used for debugging -->
+- Prototype from [Truffle Box React](https://github.com/truffle-box/react-box)
 - Bootstrap theme and styled
 - Web3.js 1.0 beta 35
 <!-- - A inlined version for websites can only use iframe (such as Wix) -->
@@ -25,7 +25,7 @@ Please note that this is still in prototype and under heavy development. The fin
 
 ### Prerequisites
 - [Node.js](https://nodejs.org/en/download/)
-- [Truffle] (https://github.com/trufflesuite/truffle) `npm install -g truffle`
+- [Truffle](https://github.com/trufflesuite/truffle) `npm install -g truffle`
 
 ### Install local dependencies
 ```
@@ -34,18 +34,18 @@ npm install
 
 ### Blockchain Smart Contract Development
 
-#### Run the Truffle development console
+Run the Truffle development console
 ```
 truffle develop
 ```
 
-#### Compile and migrate the smart contracts in Truffle console
+Compile and migrate the smart contracts in Truffle console
 ```
 compile
 migrate
 ```
 
-#### Test smart contracts
+Test smart contracts
 ```
 // If inside the development console.
 test
@@ -55,19 +55,19 @@ truffle test
 
 ### React Frontend Development
 
-#### Run the webpack server for front-end hot reloading (outside the development console
+Run the webpack server for front-end hot reloading (outside the development console
 ```
 // Serves the front-end on http://localhost:3000
 npm run start
 ```
 
-### Jest is included for testing React components. Compile your contracts before running Jest, or you may receive some file not found errors
+Jest is included for testing React components. Compile your contracts before running Jest, or you may receive some file not found errors
 ```
 // Run Jest outside of the development console for front-end component tests.
 npm run test
 ```
 
-### To build the application for production, use the build command. A production build will be in the build_webpack folder
+To build the application for production, use the build command. A production build will be in the build_webpack folder
 ```
 npm run build
 ```
