@@ -32,7 +32,7 @@ Please note that this is still in prototype and under heavy development. The fin
 npm install
 ```
 
-### Blockchain Smart Contract Development
+### Blockchain smart contract development
 
 Run the Truffle development console
 ```
@@ -53,7 +53,7 @@ test
 truffle test
 ```
 
-### React Frontend Development
+### React frontend development
 
 Run the webpack server for front-end hot reloading (outside the development console
 ```
@@ -63,7 +63,6 @@ npm run start
 
 Jest is included for testing React components. Compile your contracts before running Jest, or you may receive some file not found errors
 ```
-// Run Jest outside of the development console for front-end component tests.
 npm run test
 ```
 
