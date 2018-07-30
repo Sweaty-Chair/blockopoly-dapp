@@ -79,7 +79,7 @@ To use this crowdsale page for your token ICO, change the token and crowdsale co
 - [Truffle](http://truffleframework.com/) - A development framework for Ethereum for writing, deploying and testing smart contract solidity scripts
 - [Web3.js](https://github.com/ethereum/web3.js/) - A JavaScript library for communicating with Ethereum network
 - [React.js](https://reactjs.org/) - A JavaScript library for building frontend user interfaces
-- [Node.js](https://nodejs.org/en/) - A JavaScript for building scalable network applications
+- [Node.js](https://nodejs.org/en/) - A JavaScript runtime for building scalable network applications
 
 ## More Info
 - [Truffle Boxes](https://truffleframework.com/boxes)
