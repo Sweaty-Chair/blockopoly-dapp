@@ -4,7 +4,13 @@
 
 A complete web dApp for land jackpot buying.
 
-One land releases each week, and a land has 42 plots. Players can join 1 of 4
+There's 42 lands in total and ONE land is released each week. A land is split into 42 plots and all players can join 1 of 4 teams and bid on one or more plots with ethers. Each team has different reward divided rules. (More detail of each team will be finalized)
+
+The bidding process will be just like eBay, where a bidder place a maximum bid and the current bidding price of the plot is automatically adjusted every time another bidder placing a bid. At the end of the week, the team with most bided plots wins the land. The owner of the land will be assigned to the player who having the most total bids within that team. All bid ethers of the winning team will be returned to the players, and part of the the bid ethers of losing teams will be rewarded to winning team, and the rest will be deposited into the final jackpot. The winning team and contributed bidders are saved into the land's description permanently.
+
+After all 42 lands are sold, the game enters free-trade period for another week. Land owners can freely trade their lands to another with agreed prices. A small percentage fee will be charged and deposited into the final jackpot. At the end of the free-trade week, the owner of most lands take the final jackpot ethers. (In case the number of lands are equal for 2 players, the player with the most total bidding price wins)
+
+The ownership of the land is a ERC721 token and will be owned by the owner in life time. Owners of the lands can customize and create building of the land, which will be part of Block42 world and will receive income from the interaction with Block42 players.
 
 Please note that this is still in prototype and under heavy development. The final product may be subject to a number of quality assurance tests to verify conformance with specifications.
 
