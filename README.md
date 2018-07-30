@@ -53,7 +53,7 @@ test
 truffle test
 ```
 
-### React frontend development
+### React.js frontend development
 
 Run the webpack server for front-end hot reloading (outside the development console
 ```
@@ -85,7 +85,5 @@ To use this crowdsale page for your token ICO, change the token and crowdsale co
 - [create-react-app](https://github.com/facebook/create-react-app/)
 
 ## TODO
-- Optimize using React.js
-- Provide a better auto flatten method using NPM
 - Fix contract event feedback currently not working with MetaMask
 - Add better graphic for MetaMask install instruction
