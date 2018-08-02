@@ -1,0 +1,166 @@
+.bid-button {
+  background-color:#4285F4;
+  border-radius:3px;
+  border:none;
+  color:#FFF;
+  margin:3px;
+  }
+  
+  .bid-input {
+  width:120px;
+  border-radius:2px;
+  border:none;
+  padding-left: 3px;
+  }
+  
+  .bid-table {
+  max-width:500px;
+  margin:auto;
+  padding:5px;
+  }
+  
+  .board-row {
+  height:34px;
+  margin:-1px 0 0;
+  }
+  
+  .body {
+  min-width:250px;
+  }
+  
+  .center {
+  text-align:center;
+  }
+
+  .color-white {
+    color:white;
+  }
+  
+  .dark {
+  background-color:rgba(0,0,0,0.87);
+  }
+  
+  .dark-half {
+  background-color:rgba(0,0,0,0.5);
+  }
+  
+  .float-right {
+  float:right;
+  }
+  
+  .game {
+  display:flex;
+  flex-direction:row;
+  }
+  
+  .game-info {
+  margin-left:20px;
+  }
+  
+  .gridboard {
+  background-color:#f1f1f1;
+  text-align:center;
+  padding-top:25px;
+  padding-bottom:25px;
+  }
+  
+  .kbd-navigation .square:focus {
+  background:#ddd;
+  }
+  
+  .no-border {
+  border:none;
+  }
+  
+  .position-text {
+  color:#960f0f;
+  font-size:23px;
+  }
+  
+  .square {
+  background:#fff;
+  border:1px solid #999;
+  font-size:24px;
+  font-weight:700;
+  line-height:34px;
+  height:34px;
+  margin-right:-1px;
+  margin-top:-1px;
+  text-align:center;
+  width:34px;
+  padding:0;
+  }
+  
+  .square:focus {
+  outline:none;
+  }
+  
+  .status {
+  margin-bottom:10px;
+  }
+  
+  .team-icon {
+    width:32px;
+    height:32px;
+    text-align:center;
+    font-size:24px;
+    line-height:32px;
+    border:1px solid #999;
+    margin-right: 10px;
+    display: inline-block;
+  }
+    
+  .team-score {
+    height: 34px;
+    margin-top: 15px;
+    width: 25%;
+    display: inline-block;
+  }
+
+  .team-score-text {
+    display: inline-block;
+    line-height: 100%;
+    color: white;
+    margin-right: 15px;
+    vertical-align: middle;
+  }
+
+  .team-D {
+  background-color:#29b6f6;
+  }
+  
+  .team-B {
+  background-color:#9ccc65;
+  }
+  
+  .team-A {
+  background-color:#ec407a;
+  }
+  
+  .team-C {
+  background-color:#ffee58;
+  }
+  
+  .topnav {
+  overflow:hidden;
+  background-color:#333;
+  }
+  
+  .topnav a {
+  float:left;
+  display:block;
+  color:#f2f2f2;
+  text-align:center;
+  text-decoration:none;
+  padding:14px 16px;
+  }
+  
+  .vertical-icon {
+  width:30px;
+  height:30px;
+  float:left;
+  }
+
+  .square-select {
+    background-color: #1e88e5;
+  }
