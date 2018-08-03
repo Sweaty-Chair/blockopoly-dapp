@@ -6,6 +6,12 @@ import './css/pure-min.css'
 import './App.css'
 import './css/main.css'
 
+const BOARD_ROWS = 6;
+const BOARD_COLUMNS = 7;
+const DOUBLE_POS = [3, 8, 12, 29, 33, 38];
+const TRIPPLE_POS = [16, 18, 23, 25];
+const POINTS_POS = [0, 6, 35, 41];
+
 function Square(props) {
     let className = "square";
     let team;
@@ -137,19 +143,24 @@ class Info extends React.Component {
 
     render () {
         const row = parseInt(this.props.selectId / 7 + 1, 10);
-        const coloum = parseInt(this.props.selectId % 7 + 1, 10);
+        const column = parseInt(this.props.selectId % 7 + 1, 10);
         const bidPrice = this.props.bidPrice;
         const teams = this.props.teams;
+        const scores = this.props.scores;
         const selectTeam = this.props.selectTeam;
         const currentSquarePrice = this.props.currentSquarePrice;
         let teamScores = [];
         let currentSquareInfo;
         for (let i = 0; i < teams.length; ++i) {
+            let score = 0;
+            if (scores && scores.length > i) {
+                score = scores[i];
+            }
             teamScores.push(
             <TeamScore 
                 key={teams[i]} 
                 team={teams[i]} 
-                score="0" 
+                score={score} 
                 selectTeam={selectTeam}
                 onClick={() => this.props.onSelectTeam(teams[i])}
             />)
@@ -163,7 +174,7 @@ class Info extends React.Component {
                     <div>
                         <img className="vertical-icon" src='position.png' alt="Position"/>
                         <span className="position-text"> ({row}, </span>
-                        <span className="position-text">{coloum})</span>
+                        <span className="position-text">{column})</span>
                     </div>
                     <div>
                         <input className="bid-input" type="number" placeholder="input price..." value={bidPrice} onChange={this.handleBidChange}>
@@ -186,6 +197,7 @@ class Bid extends React.Component {
         this.handleBidChange = this.handleBidChange.bind(this);
         this.state = {
             teams: ["team-A", "team-B", "team-C", "team-D"],
+            scores: [],
             board: { squares: Array(42).fill(null) },
             team: '',
             selectedSquare: -1,
@@ -216,9 +228,42 @@ class Bid extends React.Component {
 
     bidSquareLand(squareId, bidTeam, bidPrice) {
         const newSquares = this.state.board.squares.slice();
+        let bidBlocks;
+        let teams = this.state.teams;
+        let teamsScore = [];
         newSquares[squareId] = {team: bidTeam, bid: bidPrice};
+        bidBlocks = CalculateBlocks(newSquares);
+        if (bidBlocks) {
+            for (let i = 0; i < teams.length; ++i) {
+                let score = 0;
+                for (let p = 0; p < bidBlocks.length; ++p) {
+                    if (bidBlocks[p].team === teams[i]) {
+                        for (let b = 0; b < bidBlocks[p].blocks.length; ++b) {
+                            let blockScore = 0;
+                            let scoreMultiplier = 1;
+                            let bonusScore = 0;
+                            const currentBlock = bidBlocks[p].blocks[b];
+                            let blockCounter = currentBlock.length;
+                            blockScore += 5 * blockCounter * (blockCounter + 1);
+                            for (let s = 0; s < currentBlock.length; ++s) {
+                                if (DOUBLE_POS.includes(currentBlock[s])) {
+                                    scoreMultiplier *= 2;
+                                } else if (TRIPPLE_POS.includes(currentBlock[s])) {
+                                    scoreMultiplier *= 3;
+                                } else if (POINTS_POS.includes(currentBlock[s])) {
+                                    bonusScore += 10;
+                                }
+                            }
+                            score += blockScore * scoreMultiplier + bonusScore;
+                        }
+                    }
+                }
+                teamsScore.push(score);
+            }
+        }
         this.setState({
-            board: {squares: newSquares}
+            board: {squares: newSquares},
+            scores: teamsScore,
         });
     }
 
@@ -229,7 +274,7 @@ class Bid extends React.Component {
     onBidClick() {
         const squareId = this.state.selectedSquare;
         const teamID = this.state.team;
-        const bidPrice = this.state.bidPrice;
+        const bidPrice = parseFloat(this.state.bidPrice);
         if (squareId < 0 || squareId >= this.state.board.squares.length) {
             this.popupHint("please select a land first.");
             return;
@@ -245,12 +290,12 @@ class Bid extends React.Component {
             if (!bidSquare) {
                 this.bidSquareLand(squareId, teamID, bidPrice);
             } else if (bidSquare.team === teamID) {
-                this.bidSquareLand(squareId, teamID, parseFloat(bidSquare.bid) + parseFloat(bidPrice));
+                this.bidSquareLand(squareId, teamID, parseFloat(bidSquare.bid) + bidPrice);
             } else {
-                if (bidPrice > bidSquare.bid) {
+                if (bidPrice > parseFloat(bidSquare.bid)) {
                     this.bidSquareLand(squareId, teamID, bidPrice);
                 } else {
-                    this.popupHint("Please make a bid higher than current bid.");
+                    this.popupHint("Please make a bid higher than current bid.(current: " + bidSquare.bid + " your bid: " + bidPrice + ")");
                 }
             }
         }
@@ -261,6 +306,7 @@ class Bid extends React.Component {
         const selectTeam = this.state.team;
         const bidPrice = this.state.bidPrice;
         const teams = this.state.teams;
+        const scores = this.state.scores;
         const squares = this.state.board.squares;
         const currentSquare = squares[selectedSquareId];
         let currentSquarePrice;
@@ -284,14 +330,66 @@ class Bid extends React.Component {
                     selectTeam={selectTeam}
                     onSelectTeam={(teamId) => this.selectTeam(teamId)}
                     currentSquarePrice={currentSquarePrice}
+                    scores={scores}
                 />
             </div>
         );
     }
 }
 
-function CalculatePoints(squares) {
-    
+function CalculateBlocks(squares) {
+    let points = [];
+    for (let i = 0; i < squares.length; ++i) {
+        let currentSquare = squares[i];
+        if (currentSquare) {
+            // insert block
+            let isNewTeam = true;
+            for (let t = 0; t < points.length; ++t) {
+                let currentScoreRow = points[t];
+                if (currentScoreRow.team === currentSquare.team) {
+                    isNewTeam = false;
+                    let isNewBlock = true;
+                    for (let b = 0; b < currentScoreRow.blocks.length; ++b) {
+                        let currentBlock = currentScoreRow.blocks[b];
+                        if (IsBlock(i, currentBlock)) {
+                            isNewBlock = false;
+                            currentBlock.push(i);
+                        }
+                    }
+                    if (isNewBlock) {
+                        let newBlock = [i];
+                        currentScoreRow.blocks.push(newBlock);
+                    }
+                    break;
+                }
+            }
+            if (isNewTeam) {
+                points.push({
+                    team: currentSquare.team,
+                    blocks: [[i]],
+                });
+            }
+        }
+    }
+    return points;
+}
+
+function IsBlock(square, block) {
+    for (let i = 0; i < block.length; ++i) {
+        if (IsConnected(square, block[i])) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function IsConnected(first, second) {
+    let difference = parseInt(second, 10) - parseInt(first, 10);
+    difference = Math.abs(difference);
+    if (difference === 7 || difference === 1) {
+        return true;
+    }
+    return false;
 }
 
 export default Bid
