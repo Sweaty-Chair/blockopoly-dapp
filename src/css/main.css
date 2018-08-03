@@ -25,7 +25,7 @@
   }
   
   .body {
-  min-width:250px;
+  min-width: 500px;
   }
   
   .center {
@@ -34,6 +34,15 @@
 
   .color-white {
     color:white;
+  }
+
+  .color-dark-red {
+    color:#960f0f;
+  }
+
+  .current-bid-text {
+    color: #960f0f;
+    margin-left: 10px;
   }
   
   .dark {
@@ -79,16 +88,16 @@
   
   .square {
   background:#fff;
+  width:34px;
+  height:34px;
+  text-align:center;
   border:1px solid #999;
   font-size:24px;
-  font-weight:700;
-  line-height:34px;
-  height:34px;
+  line-height: 34px;
   margin-right:-1px;
   margin-top:-1px;
-  text-align:center;
-  width:34px;
   padding:0;
+  vertical-align: middle
   }
   
   .square:focus {

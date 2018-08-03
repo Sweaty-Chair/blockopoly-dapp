@@ -8,12 +8,18 @@ import './css/main.css'
 
 function Square(props) {
     let className = "square";
+    let team;
     if (props.isSelected) {
         className += " square-select";
     }
+    if (props.bidState) {
+        const teamName = props.bidState.team;
+        className += " " + teamName;
+        team = teamName.split("-")[1];
+    }
     return (
         <button className={className} onClick={props.onClick}>
-            {}
+            {team}
         </button>
     );
 }
@@ -32,27 +38,32 @@ function TeamScore(props) {
     const className = "team-icon " + props.team;
     const score = props.score;
     const teamTag = props.team.split("-")[1];
+    let divClass = "team-score";
+    if (props.selectTeam === props.team) {
+        divClass += " square-select";
+    }
     return (
-        <div className="team-score">
-            <button className={className}>{teamTag}</button>
+        <div className={divClass}>
+            <div className={className} onClick={props.onClick}>{teamTag}</div>
             <p className="team-score-text">Score: {score}</p>
         </div>
     );
 }
 
 class Board extends React.Component {
-
     renderSquare(i) {
         return (
             <Square
                 selectId={this.props.selectId}
                 isSelected={this.props.selectId === i}
+                bidState={this.props.squares[i]}
                 onClick={() => this.props.onClick(i)}
             />
         );
     }
 
     render() {
+        
         return (
             <div className="gridboard">
                 <div className="board-row">
@@ -125,29 +136,43 @@ class Info extends React.Component {
     }
 
     render () {
-        const row = parseInt(this.props.selectId / 7 + 1);
-        const coloum = parseInt(this.props.selectId % 7 + 1);
+        const row = parseInt(this.props.selectId / 7 + 1, 10);
+        const coloum = parseInt(this.props.selectId % 7 + 1, 10);
         const bidPrice = this.props.bidPrice;
         const teams = this.props.teams;
+        const selectTeam = this.props.selectTeam;
+        const currentSquarePrice = this.props.currentSquarePrice;
         let teamScores = [];
+        let currentSquareInfo;
         for (let i = 0; i < teams.length; ++i) {
-            teamScores.push(<TeamScore team={teams[i]} score="0"/>)
+            teamScores.push(
+            <TeamScore 
+                key={teams[i]} 
+                team={teams[i]} 
+                score="0" 
+                selectTeam={selectTeam}
+                onClick={() => this.props.onSelectTeam(teams[i])}
+            />)
+        }
+        if (currentSquarePrice) {
+            currentSquareInfo = "(Current Bid: " + currentSquarePrice + ")";
         }
         return (
             <div className="dark">
                 <div className="bid-table">
                     <div>
-                        <img className="vertical-icon" src='position.png' />
-                        <span className="position-text"> {row}, </span>
-                        <span className="position-text">{coloum}</span>
-                        <div className="float-right">
-                            <input className="bid-input" type="number" placeholder="input price..." value={bidPrice} onChange={this.handleBidChange}>
-                            </input>
-                            <button className="bid-button" onClick={this.props.onClick}>Bid</button>
-                        </div>
-                        <div>
-                            {teamScores}
-                        </div>
+                        <img className="vertical-icon" src='position.png' alt="Position"/>
+                        <span className="position-text"> ({row}, </span>
+                        <span className="position-text">{coloum})</span>
+                    </div>
+                    <div>
+                        <input className="bid-input" type="number" placeholder="input price..." value={bidPrice} onChange={this.handleBidChange}>
+                        </input>
+                        <button className="bid-button" onClick={this.props.onClick}>Bid</button>
+                        <span className="current-bid-text">{currentSquareInfo}</span>
+                    </div>
+                    <div>
+                        {teamScores}
                     </div>
                 </div>
             </div>
@@ -175,6 +200,13 @@ class Bid extends React.Component {
         })
     }
 
+    selectTeam(team) {
+        const selectTeam = team;
+        this.setState({
+            team: selectTeam,
+        })
+    }
+
     handleBidChange(bid) {
         const newBid = bid;
         this.setState({
@@ -182,37 +214,84 @@ class Bid extends React.Component {
         })
     }
 
+    bidSquareLand(squareId, bidTeam, bidPrice) {
+        const newSquares = this.state.board.squares.slice();
+        newSquares[squareId] = {team: bidTeam, bid: bidPrice};
+        this.setState({
+            board: {squares: newSquares}
+        });
+    }
+
+    popupHint(hint) {
+        alert(hint);
+    }
+
     onBidClick() {
-        const selectId = this.state.selectedSquare;
-        const totalSquare = this.state.board.squares.length;
+        const squareId = this.state.selectedSquare;
+        const teamID = this.state.team;
         const bidPrice = this.state.bidPrice;
-        if (selectId < 0 || selectId >= totalSquare) {
-            console.log("please select a land first.");
+        if (squareId < 0 || squareId >= this.state.board.squares.length) {
+            this.popupHint("please select a land first.");
             return;
+        }
+        if (teamID === '') {
+            this.popupHint("please select a team first.");
+            return;
+        }
+        const bidSquare = this.state.board.squares[squareId];
+        if (bidPrice <= 0) {
+            this.popupHint("Please input a valid bid price.");
+        } else {
+            if (!bidSquare) {
+                this.bidSquareLand(squareId, teamID, bidPrice);
+            } else if (bidSquare.team === teamID) {
+                this.bidSquareLand(squareId, teamID, parseFloat(bidSquare.bid) + parseFloat(bidPrice));
+            } else {
+                if (bidPrice > bidSquare.bid) {
+                    this.bidSquareLand(squareId, teamID, bidPrice);
+                } else {
+                    this.popupHint("Please make a bid higher than current bid.");
+                }
+            }
         }
     }
 
     render() {
-        const currentSelected = this.state.selectedSquare;
+        const selectedSquareId = this.state.selectedSquare;
+        const selectTeam = this.state.team;
         const bidPrice = this.state.bidPrice;
         const teams = this.state.teams;
+        const squares = this.state.board.squares;
+        const currentSquare = squares[selectedSquareId];
+        let currentSquarePrice;
+        if (currentSquare) {
+            currentSquarePrice = currentSquare.bid;
+        }
         return (
             <div className="body">
                 <Navbar />
                 <Board
-                    selectId={currentSelected}
+                    selectId={selectedSquareId}
+                    squares={squares}
                     onClick={(i) => this.onSquareClick(i)}
                 />
                 <Info
                     teams={teams}
-                    selectId={currentSelected}
+                    selectId={selectedSquareId}
                     bidPrice={bidPrice}
                     updateBid={this.handleBidChange}
                     onClick={() => this.onBidClick()}
+                    selectTeam={selectTeam}
+                    onSelectTeam={(teamId) => this.selectTeam(teamId)}
+                    currentSquarePrice={currentSquarePrice}
                 />
             </div>
         );
     }
+}
+
+function CalculatePoints(squares) {
+    
 }
 
 export default Bid
