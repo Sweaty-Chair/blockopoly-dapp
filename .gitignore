@@ -14,4 +14,3 @@ build_webpack
 .DS_Store
 .env
 npm-debug.log
-.truffle-solidity-loader

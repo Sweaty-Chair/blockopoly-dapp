@@ -85,6 +85,9 @@ To use this crowdsale page for your token ICO, change the token and crowdsale co
 - [Truffle Boxes](https://truffleframework.com/boxes)
 - [create-react-app](https://github.com/facebook/create-react-app/)
 
+## Helper Links
+- [Ethereum Kovan Faucet](https://faucet.kovan.radarrelay.com/)
+
 ## TODO
 - Fix contract event feedback currently not working with MetaMask
 - Add better graphic for MetaMask install instruction
