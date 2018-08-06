@@ -2,9 +2,9 @@ import 'bootstrap/dist/css/bootstrap.min.css'; // TODO use Sass
 import 'bootstrap';
 import React from 'react'
 import ReactDOM from 'react-dom'
-import App from './App'
+import Bid from './Bid'
 
 ReactDOM.render(
-  <App />,
+  <Bid />,
   document.getElementById('root')
 );
