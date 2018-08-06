@@ -11,6 +11,7 @@ const BOARD_COLUMNS = 7;
 const DOUBLE_POS = [3, 8, 12, 29, 33, 38];
 const TRIPPLE_POS = [16, 18, 23, 25];
 const POINTS_POS = [0, 6, 35, 41];
+var END_DATE = new Date("Aug 8, 2018 0:0:0");
 
 function Square(props) {
     let className = "square";
@@ -69,7 +70,6 @@ class Board extends React.Component {
     }
 
     render() {
-        
         return (
             <div className="gridboard">
                 <div className="board-row">
@@ -126,6 +126,7 @@ class Board extends React.Component {
                     {this.renderSquare(40)}
                     {this.renderSquare(41)}
                 </div>
+                <div className="float-right">{this.props.timeLeft}</div>
             </div>
         );
     }
@@ -142,8 +143,8 @@ class Info extends React.Component {
     }
 
     render () {
-        const row = parseInt(this.props.selectId / 7 + 1, 10);
-        const column = parseInt(this.props.selectId % 7 + 1, 10);
+        const row = parseInt(this.props.selectId / BOARD_COLUMNS + 1, 10);
+        const column = parseInt(this.props.selectId % BOARD_COLUMNS + 1, 10);
         const bidPrice = this.props.bidPrice;
         const teams = this.props.teams;
         const scores = this.props.scores;
@@ -195,6 +196,7 @@ class Bid extends React.Component {
     constructor(props) {
         super(props);
         this.handleBidChange = this.handleBidChange.bind(this);
+        this.bidCountdown = this.bidCountdown.bind(this);
         this.state = {
             teams: ["team-A", "team-B", "team-C", "team-D"],
             scores: [],
@@ -202,7 +204,32 @@ class Bid extends React.Component {
             team: '',
             selectedSquare: -1,
             bidPrice: '',
+            timeLeft: 'Action Closed',
+            countdownInterval: null,
         }
+    }
+
+    componentDidMount() {
+        this.bidCountdown();
+        var interval = setInterval(this.bidCountdown, 1000);
+        this.setState({countdownInterval: interval});
+    }
+
+    componentWillUnmount() {
+        clearInterval(this.state.countdownInterval);
+    }
+
+    bidCountdown() {
+        const t = END_DATE.getTime() - new Date().getTime();
+        let info;
+        if (t < 0) {
+            info = "Action Closed";
+        } else {
+            info = "Ends in: " + Math.floor(t / (1000 * 60 * 60 * 24)) + "d " + Math.floor((t % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)) + "h " + Math.floor((t % (1000 * 60 * 60)) / (1000 * 60)) + "m " + Math.floor((t % (1000 * 60)) / 1000) + "s";
+        }
+        this.setState({
+            timeLeft: info,
+        })
     }
 
     onSquareClick(i) {
@@ -320,6 +347,7 @@ class Bid extends React.Component {
                     selectId={selectedSquareId}
                     squares={squares}
                     onClick={(i) => this.onSquareClick(i)}
+                    timeLeft={this.state.timeLeft}
                 />
                 <Info
                     teams={teams}
@@ -386,7 +414,7 @@ function IsBlock(square, block) {
 function IsConnected(first, second) {
     let difference = parseInt(second, 10) - parseInt(first, 10);
     difference = Math.abs(difference);
-    if (difference === 7 || difference === 1) {
+    if (difference === BOARD_COLUMNS || difference === 1) {
         return true;
     }
     return false;
