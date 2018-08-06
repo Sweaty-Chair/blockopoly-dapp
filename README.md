@@ -17,9 +17,9 @@ Please note that this is still in prototype and under heavy development. The fin
 <!-- - Working in both Main Ethereum Network and Ropsten Test Network -->
 <!-- - Working with MetaMask, local and Infura nodes are commented and can be used for debugging -->
 - Prototype from [Truffle Box React](https://github.com/truffle-box/react-box)
-- Bootstrap theme and styled
-- Web3.js 1.0 beta 35
-- Using [OpenZeppelin 1.11.0](https://github.com/OpenZeppelin/openzeppelin-solidity) solidity framework for best security and stability
+- [Bootstrap v4.1.3](https://getbootstrap.com/)
+<!-- - Web3.js v1.0 beta 35 -->
+- [OpenZeppelin v1.11.0](https://github.com/OpenZeppelin/openzeppelin-solidity) solidity framework for best security and stability
 <!-- - A inlined version for websites can only use iframe (such as Wix) -->
 
 ## Getting Started
