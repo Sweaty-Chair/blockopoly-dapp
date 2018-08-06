@@ -311,8 +311,9 @@ class Bid extends React.Component {
             return;
         }
         const bidSquare = this.state.board.squares[squareId];
-        if (bidPrice <= 0) {
+        if (isNaN(bidPrice) || bidPrice <= 0) {
             this.popupHint("Please input a valid bid price.");
+            return;
         } else {
             if (!bidSquare) {
                 this.bidSquareLand(squareId, teamID, bidPrice);
