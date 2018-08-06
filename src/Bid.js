@@ -377,16 +377,31 @@ function CalculateBlocks(squares) {
                 if (currentScoreRow.team === currentSquare.team) {
                     isNewTeam = false;
                     let isNewBlock = true;
+                    let connectedBlocks = [];
+                    connectedBlocks.push(i);
+                    let notConnectedBlocks = [];
                     for (let b = 0; b < currentScoreRow.blocks.length; ++b) {
                         let currentBlock = currentScoreRow.blocks[b];
                         if (IsBlock(i, currentBlock)) {
                             isNewBlock = false;
-                            currentBlock.push(i);
+                            connectedBlocks = connectedBlocks.concat(currentBlock);
+                        } else {
+                            notConnectedBlocks.push(currentBlock);
                         }
                     }
+
                     if (isNewBlock) {
                         let newBlock = [i];
                         currentScoreRow.blocks.push(newBlock);
+                    } else {
+                        let newBlocks = [];
+                        if (connectedBlocks) {
+                            newBlocks.push(connectedBlocks);
+                        }
+                        if (notConnectedBlocks) {
+                            newBlocks = newBlocks.concat(notConnectedBlocks);
+                        }
+                        currentScoreRow.blocks = newBlocks;
                     }
                     break;
                 }
