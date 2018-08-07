@@ -66,6 +66,26 @@ class App extends Component {
       }).then((result) => {
         console.log(result)
         // TODO
+
+        // Send bid request, TODO: handle the result accordingly
+        return landPotAuctionInstance.bid(0, 0, 0, { from: accounts[0], value: this.state.web3.utils.toWei(("0.001"), 'ether') })
+        .once('transactionHash', (hash) => {
+          console.log('sent bid')
+          // $('#transaction-status').html('Your contribution is being processed... <br />Transaction Hash: ' + getTransactionUrl(hash))
+        })
+        .once('receipt', (receipt) => {
+          console.log(receipt);
+          // $('#transaction-status').html("You've placed your bid successfully!")
+        })
+        // .on('confirmation', function(confNumber, receipt){ console.log("confirmation"); console.log(confNumber); console.log(receipt); })
+        .on('error', (error) => {
+          console.log('error')
+          // $('#transaction-status').html('There was an error processing your contribution.<br />' + String(error))
+        })
+        .then(() => {
+          console.log('sent bid')
+          // TODO
+        })
       })
     })
   }
