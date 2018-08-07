@@ -36,9 +36,9 @@ contract LandPotAuction is Pausable {
   event OutBid(int8 x, int8 y, address indexed oldBidder, address indexed bidder, uint8 indexed team, uint256 currentBid);
   event Withdrawn(address indexed payee, uint256 weiAmount);
 
-  uint8 constant PLOT_SIZE = 7; // 7x7 plots
-  uint8 constant PLOT_AREA = 49; // For better performance and less gas. 7x7 plots = 49
-  int8 constant PLOT_HELF_SIZE = 3; // For better performance and less gas. 7 /2 = 3
+  uint8 constant PLOT_WIDTH = 7; // 7x6 plots
+  uint8 constant PLOT_COUNT = 42; // Cache for better performance and less gas. 7x6 plots = 42
+  int8 constant PLOT_WIDTH_HALF = 3; // Cache for better performance and less gas. 7 /2 = 3
 
   // The current world of all selling lands, this is only change after the final free-trade period
   uint32 public currentWorldId;
@@ -76,7 +76,7 @@ contract LandPotAuction is Pausable {
     bool push = false;
     if (currentAuction.plots.length == 0)
       push = true;
-    for (uint8 k = 0; k < PLOT_AREA; k++) {
+    for (uint8 k = 0; k < PLOT_COUNT; k++) {
       (int8 i, int8 j) = plotIndexToPosition(k);
       if (push)
         currentAuction.plots.push(Plot(i, j, address(0), 0, 0, 0)); // Creates new struct and adds it in storage
@@ -120,15 +120,15 @@ contract LandPotAuction is Pausable {
    * @dev Maps a 2D plot position to a 1D array index. (-3,-3)->(3,3) to 0->49
    */
   function plotPositionToIndex(int8 i, int8 j) public pure returns (uint8) {
-    return uint8((i + PLOT_HELF_SIZE) * int8(PLOT_SIZE) + j + PLOT_HELF_SIZE);
+    return uint8((i + PLOT_WIDTH_HALF) * int8(PLOT_WIDTH) + j + PLOT_WIDTH_HALF);
   }
 
   /**
    * @dev Converts a a 1D plot array index to 2D position. 0->49 to (-3,-3)->(3,3)
    */
   function plotIndexToPosition(uint8 k) public pure returns (int8 i, int8 j) {
-    i = int8(k) / int8(PLOT_SIZE) - PLOT_HELF_SIZE;
-    j = int8(k) % int8(PLOT_SIZE) - PLOT_HELF_SIZE;
+    i = int8(k) / int8(PLOT_WIDTH) - PLOT_WIDTH_HALF;
+    j = int8(k) % int8(PLOT_WIDTH) - PLOT_WIDTH_HALF;
   }
   
   /**
@@ -161,12 +161,12 @@ contract LandPotAuction is Pausable {
    * @dev Gets all plots in current auction.
    */
   function getPlots() external view returns (int8[] xs, int8[] ys, address[] bidders, uint8[] teams, uint256[] currentBids) {
-    xs = new int8[](PLOT_AREA);
-    ys = new int8[](PLOT_AREA);
-    bidders = new address[](PLOT_AREA);
-    teams = new uint8[](PLOT_AREA);
-    currentBids = new uint256[](PLOT_AREA);
-    for (uint8 k = 0; k < PLOT_AREA; k++) {
+    xs = new int8[](PLOT_COUNT);
+    ys = new int8[](PLOT_COUNT);
+    bidders = new address[](PLOT_COUNT);
+    teams = new uint8[](PLOT_COUNT);
+    currentBids = new uint256[](PLOT_COUNT);
+    for (uint8 k = 0; k < PLOT_COUNT; k++) {
       Plot storage plot = currentAuction.plots[k];
       xs[k] = plot.x;
       ys[k] = plot.y;
@@ -215,11 +215,10 @@ contract LandPotAuction is Pausable {
    * @dev Gets all contributed bids at all plots of the current auction.
    */
   function getMyContributedBids() external view returns (int8[] xs, int8[] ys, uint256[] bids) {
-    uint8 size = PLOT_SIZE * PLOT_SIZE;
-    xs = new int8[](size);
-    ys = new int8[](size);
-    bids = new uint256[](size);
-    for (uint8 k = 0; k < size; k++) {
+    xs = new int8[](PLOT_COUNT);
+    ys = new int8[](PLOT_COUNT);
+    bids = new uint256[](PLOT_COUNT);
+    for (uint8 k = 0; k < PLOT_COUNT; k++) {
       Plot storage p = currentAuction.plots[k];
       if (p.bids[msg.sender] > 0) {
         xs[k] = p.x;
