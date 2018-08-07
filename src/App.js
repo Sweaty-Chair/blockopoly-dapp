@@ -46,48 +46,70 @@ class App extends Component {
     const contract = require('truffle-contract')
     const landPotAuction = contract(LandPotAuctionContract)
     landPotAuction.setProvider(this.state.web3.currentProvider)
-
-    // Declaring this for later so we can chain functions on landPotAuction.
-    var landPotAuctionInstance
+    
+    // Get network ids.
+    this.state.web3.eth.net.getId().then((networkId) => {
+      console.log(networkId)
+      this.setState({netId: networkId})
+    })
     
     // Get accounts.
     this.state.web3.eth.getAccounts((error, accounts) => {
+      this.setState({
+        accounts: accounts
+      })
       landPotAuction.deployed().then((instance) => {
-        landPotAuctionInstance = instance
+        this.setState({
+          landPotAuctionInstance: instance
+        })
         // Gets auction ending time.
-        return landPotAuctionInstance.getEndingTime.call()
+        return this.state.landPotAuctionInstance.getEndingTime.call()
       }).then((result) => {
         const endingDate = new Date(0)
         endingDate.setUTCSeconds(result.toNumber())
         console.log(endingDate)
         // TODO
         // Gets all plots.
-        return landPotAuctionInstance.getPlots.call()
+        return this.state.landPotAuctionInstance.getPlots.call()
       }).then((result) => {
         console.log(result)
         // TODO
-
-        // Send bid request, TODO: handle the result accordingly
-        return landPotAuctionInstance.bid(0, 0, 0, { from: accounts[0], value: this.state.web3.utils.toWei(("0.001"), 'ether') })
-        .once('transactionHash', (hash) => {
-          console.log('sent bid')
-          // $('#transaction-status').html('Your contribution is being processed... <br />Transaction Hash: ' + getTransactionUrl(hash))
-        })
-        .once('receipt', (receipt) => {
-          console.log(receipt);
-          // $('#transaction-status').html("You've placed your bid successfully!")
-        })
-        // .on('confirmation', function(confNumber, receipt){ console.log("confirmation"); console.log(confNumber); console.log(receipt); })
-        .on('error', (error) => {
-          console.log('error')
-          // $('#transaction-status').html('There was an error processing your contribution.<br />' + String(error))
-        })
-        .then(() => {
-          console.log('sent bid')
-          // TODO
-        })
       })
     })
+  }
+
+  handleBid = () => {
+    console.log('bid clicked')
+    const bidPrice = this.refs.Input.value
+    console.log(bidPrice)
+    // Send bid request, TODO: handle the result accordingly
+    return this.state.landPotAuctionInstance.bid(0, 0, 0, { from: this.state.accounts[0], value: this.state.web3.utils.toWei((bidPrice), 'ether'), gasPrice: 20e9, gas: 150000 })
+    .then((txhash) => {
+      console.log('bid sent')
+      // $('#transaction-status').html('Successfully placed bid, please wait for the transaction complete. <br />Transaction Hash: ' + getTransactionUrl(hash))
+      console.log('Successfully placed bid, please wait for the transaction complete. <br />Transaction Hash: ' + this.getTransactionUrl(txhash.tx))
+      // TODO
+    })
+    .catch((error) => {
+      console.error(error)
+    })
+  }
+
+  getTransactionUrl (address) {
+    return this.getEtherScanUrl('tx', address)
+  }
+  
+  getTokenUrl (address) {
+    return this.getEtherScanUrl('token', address)
+  }
+  
+  getContractUrl (address) {
+    return this.getEtherScanUrl('address', address)
+  }
+  
+  getEtherScanUrl (type, address) {
+    var url = this.state.web3.version.network === 3 ? 'ropsten.etherscan.io' : 'etherscan.io'
+    return "<a href='https://" + url + '/' + type + '/' + address + "' target='_blank'>" + address + '</a>'
   }
 
   render() {
@@ -106,6 +128,8 @@ class App extends Component {
               <p>If your contracts compiled and migrated successfully, below will show a stored value of 5 (by default).</p>
               <p>Try changing the value stored on <strong>line 59</strong> of App.js.</p>
               <p>The stored value is: {this.state.storageValue}</p>
+              <input type="text" ref="Input" name="input" />
+              <button onClick={this.handleBid}>Bid</button>
             </div>
           </div>
         </main>

@@ -191,15 +191,15 @@ contract LandPotAuction is Pausable {
     uint8 k = plotPositionToIndex(i, j);
     Plot storage plot = currentAuction.plots[k];
     uint256 newBid = balances[msg.sender].add(msg.value);
-    require(newBid >= plot.currentBid.add(1 finney)); // Must larger than current bid
+    require(newBid >= plot.currentBid.add(1 finney)); // Must larger than current bid by 1 finney
     if (newBid <= plot.maxBid) { // Failed to outbid current bidding, less than its max bid
-      emit OutBid(plot.x, plot.y, plot.bidder, msg.sender, team, newBid);
+      // emit OutBid(plot.x, plot.y, plot.bidder, msg.sender, team, newBid);
       newBid = newBid.add(1 finney); // Add a finney to the current bid
       plot.currentBid = newBid; // Increase the current bid
       emit OutBid(plot.x, plot.y, msg.sender, plot.bidder, plot.team, newBid);
       revert();
     }
-    if (plot.bidder != address(0)) { // Add the bid of the old bidder to balance, so he can withdraw later
+    if (plot.bidder != address(0)) { // Add the bid of the old bidder to balance, so he can withdraw/reuse later
       totalBalances = totalBalances.add(plot.maxBid);
       balances[plot.bidder] = balances[plot.bidder].add(plot.maxBid);
     }
@@ -238,17 +238,10 @@ contract LandPotAuction is Pausable {
   }
   
   /**
-   * @dev Gets the outbid balance of an address.
-   */
-  function balanceOf(address who) public view returns (uint256) {
-    return balances[who];
-  }
-
-  /**
    * @dev Gets the outbid balance of sender.
    */
   function balanceOfMe() external view returns (uint256) {
-    return balanceOf(msg.sender);
+    return balances[msg.sender];
   }
   
   /**
