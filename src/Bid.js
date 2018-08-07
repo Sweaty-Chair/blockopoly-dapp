@@ -1,4 +1,6 @@
 import React from 'react'
+import LandPotAuctionContract from '../build/contracts/LandPotAuction.json'
+import getWeb3 from './utils/getWeb3'
 
 import './css/oswald.css'
 import './css/open-sans.css'
@@ -14,8 +16,10 @@ const POINTS_POS = [0, 6, 35, 41];
 var END_DATE = new Date("Aug 8, 2018 0:0:0");
 
 function Square(props) {
+    const myId = props.id;
     let className = "square";
     let team;
+    let info;
     if (props.isSelected) {
         className += " square-select";
     }
@@ -24,9 +28,17 @@ function Square(props) {
         className += " " + teamName;
         team = teamName.split("-")[1];
     }
+    if (myId === 0 || myId === 6 || myId === 35 || myId === 41) {
+        info = "+10";
+    } else if (myId === 3 || myId === 8 || myId === 12 || myId === 29 || myId === 33 || myId === 38) {
+        info = "x2";
+    } else if (myId === 16 || myId === 18 || myId === 23 || myId === 25) {
+        info = "x3";
+    }
     return (
         <button className={className} onClick={props.onClick}>
             {team}
+            <span className="square-info">{info}</span>
         </button>
     );
 }
@@ -65,6 +77,7 @@ class Board extends React.Component {
                 isSelected={this.props.selectId === i}
                 bidState={this.props.squares[i]}
                 onClick={() => this.props.onClick(i)}
+                id={i}
             />
         );
     }
@@ -198,6 +211,7 @@ class Bid extends React.Component {
         this.handleBidChange = this.handleBidChange.bind(this);
         this.bidCountdown = this.bidCountdown.bind(this);
         this.state = {
+            web3: null,
             teams: ["team-A", "team-B", "team-C", "team-D"],
             scores: [],
             board: { squares: Array(42).fill(null) },
@@ -208,6 +222,21 @@ class Bid extends React.Component {
             countdownInterval: null,
         }
     }
+    componentWillMount() {
+        // Get network provider and web3 instance.
+        // See utils/getWeb3 for more info.
+        getWeb3
+            .then(results => {
+                this.setState({
+                    web3: results.web3
+                })
+                // Instantiate contract once web3 provided.
+                this.instantiateContract()
+            })
+            .catch(() => {
+                console.log('Error finding web3.')
+            })
+    }
 
     componentDidMount() {
         this.bidCountdown();
@@ -217,6 +246,42 @@ class Bid extends React.Component {
 
     componentWillUnmount() {
         clearInterval(this.state.countdownInterval);
+    }
+
+    instantiateContract() {
+        const contract = require('truffle-contract')
+        const landPotAuction = contract(LandPotAuctionContract)
+        landPotAuction.setProvider(this.state.web3.currentProvider)
+
+        // Declaring this for later so we can chain functions on landPotAuction.
+        var landPotAuctionInstance
+
+        // Get accounts.
+        this.state.web3.eth.getAccounts((error, accounts) => {
+            landPotAuction.deployed().then((instance) => {
+                landPotAuctionInstance = instance
+                // Gets auction ending time.
+                return landPotAuctionInstance.getEndingTime.call()
+            }).then((result) => {
+                const endingDate = new Date(0)
+                endingDate.setUTCSeconds(result.toNumber())
+                END_DATE = endingDate;
+                // Gets all plots.
+                return landPotAuctionInstance.getPlots.call()
+            }).then((result) => {
+                console.log(result)
+                // TODO
+                const newSquares = this.state.board.squares.slice();
+                for (let i = 0; i < 42; ++i) {
+                    if (result[4][i].toNumber() > 0) {
+                        newSquares[i] = { team: result[3][i].toNumber(), bid: result[4][i].toNumber() }
+                    }
+                }
+                this.setState({
+                    board: {squares: newSquares},
+                });
+            })
+        })
     }
 
     bidCountdown() {
@@ -254,6 +319,20 @@ class Bid extends React.Component {
     }
 
     bidSquareLand(squareId, bidTeam, bidPrice) {
+        const contract = require('truffle-contract')
+        const landPotAuction = contract(LandPotAuctionContract)
+        landPotAuction.setProvider(this.state.web3.currentProvider)
+        var landPotAuctionInstance
+        this.state.web3.eth.getAccounts((error, accounts) => {
+            landPotAuction.deployed().then((instance) => {
+                landPotAuctionInstance = instance
+                // Gets auction ending time.
+                return landPotAuctionInstance.getPlots.call()
+            }).then((result) => {
+                landPotAuctionInstance.bid(0,0,0)
+            })
+        })
+
         const newSquares = this.state.board.squares.slice();
         let bidBlocks;
         let teams = this.state.teams;
@@ -288,6 +367,7 @@ class Bid extends React.Component {
                 teamsScore.push(score);
             }
         }
+
         this.setState({
             board: {squares: newSquares},
             scores: teamsScore,
