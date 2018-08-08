@@ -8,7 +8,7 @@ import './css/pure-min.css'
 import './App.css'
 import './css/main.css'
 
-const BOARD_ROWS = 6;
+// const BOARD_ROWS = 6;
 const BOARD_COLUMNS = 7;
 const DOUBLE_POS = [3, 8, 12, 29, 33, 38];
 const TRIPPLE_POS = [16, 18, 23, 25];
@@ -43,11 +43,18 @@ function Square(props) {
     );
 }
 
-function Navbar() {
+function Navbar(props) {
     return (
         <div>
             <nav className="topnav">
                 <a href="#">Block 42</a>
+                <div>
+                    <button className="withdraw" onClick={props.Onclick}>Withdraw</button>
+                </div>
+                <div>
+                    <img  src='eth.png' alt="Bid Pool:"/>{props.pool}
+                </div>
+
             </nav>
         </div>
     );
@@ -210,6 +217,7 @@ class Bid extends React.Component {
         super(props);
         this.handleBidChange = this.handleBidChange.bind(this);
         this.bidCountdown = this.bidCountdown.bind(this);
+        this.updateScores = this.updateScores.bind(this);
         this.state = {
             web3: null,
             teams: ["team-A", "team-B", "team-C", "team-D"],
@@ -220,6 +228,9 @@ class Bid extends React.Component {
             bidPrice: '',
             timeLeft: 'Action Closed',
             countdownInterval: null,
+            landPotAuctionInstance: null,
+            accounts: null,
+            poolBalance: "",
         }
     }
     componentWillMount() {
@@ -254,35 +265,64 @@ class Bid extends React.Component {
         landPotAuction.setProvider(this.state.web3.currentProvider)
 
         // Declaring this for later so we can chain functions on landPotAuction.
-        var landPotAuctionInstance
 
         // Get accounts.
         this.state.web3.eth.getAccounts((error, accounts) => {
             landPotAuction.deployed().then((instance) => {
-                landPotAuctionInstance = instance
+                this.setState({
+                    landPotAuctionInstance: instance,
+                    accounts: accounts,
+                })
+                console.log("land pot auction instance is set.");
                 // Gets auction ending time.
-                return landPotAuctionInstance.getEndingTime.call()
+                return instance.getEndingTime.call()
             }).then((result) => {
+                // Set auction ending time.
                 const endingDate = new Date(0)
                 endingDate.setUTCSeconds(result.toNumber())
                 END_DATE = endingDate;
                 // Gets all plots.
-                return landPotAuctionInstance.getPlots.call()
+                return this.state.landPotAuctionInstance.getPlots.call()
             }).then((result) => {
-                console.log(result)
-                // TODO
                 const newSquares = this.state.board.squares.slice();
                 for (let i = 0; i < 42; ++i) {
                     if (result[4][i].toNumber() > 0) {
-                        newSquares[i] = { team: result[3][i].toNumber(), bid: result[4][i].toNumber() }
+                        console.log("square[" + i + "]: bid-" + result[4][i]);
+                        newSquares[i] = { team: this.state.teams[result[3][i].toNumber()], bid: this.state.web3.utils.fromWei(result[4][i].toString()) }
                     }
                 }
                 this.setState({
                     board: {squares: newSquares},
                 });
-            })
+                return this.state.landPotAuctionInstance.balanceOfMe.call()
+            }).then((balance) => {
+                // get pool balance
+                const b = balance.toNumber();
+                this.setState({
+                    poolBalance: b,
+                })
+                console.log('current pool balance: ' + b);
+            }).then(() => {this.updateScores()})
         })
     }
+
+
+    getTransactionUrl (address) {
+        return this.getEtherScanUrl('tx', address)
+      }
+      
+      getTokenUrl (address) {
+        return this.getEtherScanUrl('token', address)
+      }
+      
+      getContractUrl (address) {
+        return this.getEtherScanUrl('address', address)
+      }
+      
+      getEtherScanUrl (type, address) {
+        var url = this.state.web3.version.network === 3 ? 'ropsten.etherscan.io' : 'etherscan.io'
+        return "<a href='https://" + url + '/' + type + '/' + address + "' target='_blank'>" + address + '</a>'
+      }
 
     bidCountdown() {
         const t = END_DATE.getTime() - new Date().getTime();
@@ -318,27 +358,46 @@ class Bid extends React.Component {
         })
     }
 
-    bidSquareLand(squareId, bidTeam, bidPrice) {
-        const contract = require('truffle-contract')
-        const landPotAuction = contract(LandPotAuctionContract)
-        landPotAuction.setProvider(this.state.web3.currentProvider)
-        var landPotAuctionInstance
-        this.state.web3.eth.getAccounts((error, accounts) => {
-            landPotAuction.deployed().then((instance) => {
-                landPotAuctionInstance = instance
-                // Gets auction ending time.
-                return landPotAuctionInstance.getPlots.call()
-            }).then((result) => {
-                landPotAuctionInstance.bid(0,0,0)
-            })
-        })
+    getSquareIndex(squareId) {
+        if (isNaN(squareId) || squareId < 0 || squareId > 41) {
+            return null;
+        }
+        let row = parseInt(squareId / BOARD_COLUMNS, 10) - 3;
+        let column = parseInt(squareId % BOARD_COLUMNS, 10) - 3;
+        return {row: row, column: column};
+    }
 
-        const newSquares = this.state.board.squares.slice();
+    bidSquareLand(squareId, bidTeam, bidPrice) {
+        const squareChainIndex = this.getSquareIndex(squareId);
+        const teamId = this.state.teams.indexOf(bidTeam);
+        if (!squareChainIndex) {
+            console.log("bid faild, invalid square Id: {" + squareId + "}");
+        }
+        if (isNaN(teamId)) {
+            console.log("Bid failed, invalid bidTeam: {" + bidTeam + "}");
+        }
+        this.state.landPotAuctionInstance.bid(squareChainIndex.row, squareChainIndex.column, teamId, { from: this.state.accounts[0], value: this.state.web3.utils.toWei((bidPrice.toString()), 'ether'), gasPrice: 20e9, gas: 150000 })
+        .then((txhash) => {
+          console.log('bid sent')
+          console.log('Successfully placed bid, please wait for the transaction complete. <br />Transaction Hash: ' + this.getTransactionUrl(txhash.tx))
+          const newSquares = this.state.board.squares.slice();
+          newSquares[squareId] = {team: bidTeam, bid: bidPrice};
+          this.setState({
+              board: {squares: newSquares},
+          });
+        }).then(() => {
+            this.updateScores();
+            console.log("balanceOfMe: " + this.state.landPotAuctionInstance.balanceOfMe().toString());
+        }).catch((error) => {
+          console.error(error)
+        })
+    }
+
+    updateScores() {
         let bidBlocks;
         let teams = this.state.teams;
         let teamsScore = [];
-        newSquares[squareId] = {team: bidTeam, bid: bidPrice};
-        bidBlocks = CalculateBlocks(newSquares);
+        bidBlocks = CalculateBlocks(this.state.board.squares);
         if (bidBlocks) {
             for (let i = 0; i < teams.length; ++i) {
                 let score = 0;
@@ -367,9 +426,7 @@ class Bid extends React.Component {
                 teamsScore.push(score);
             }
         }
-
         this.setState({
-            board: {squares: newSquares},
             scores: teamsScore,
         });
     }
@@ -421,9 +478,15 @@ class Bid extends React.Component {
         if (currentSquare) {
             currentSquarePrice = currentSquare.bid;
         }
+        let currentBalance = this.state.poolBalance;
+        if (!currentBalance) {
+            currentBalance = 0;
+        }
         return (
             <div className="body">
-                <Navbar />
+                <Navbar
+                    pool={currentBalance} 
+                />
                 <Board
                     selectId={selectedSquareId}
                     squares={squares}

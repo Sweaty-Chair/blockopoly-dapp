@@ -172,11 +172,37 @@
   text-decoration:none;
   padding:14px 16px;
   }
+
+  .topnav div {
+    float: right;
+    color:#f2f2f2;
+    text-align: center;
+    padding-left: 16px;
+    overflow: visible;
+    height: 52px;
+    line-height: 52px;
+    vertical-align: middle;
+    margin: 0;
+    border: none;
+  }
+
+  .topnav img {
+    width: 25px;
+  }
   
   .vertical-icon {
   width:30px;
   height:30px;
   float:left;
+  }
+
+  button.withdraw {
+    color: #333;
+    height: 32px;
+    vertical-align: middle;
+    line-height: normal;
+    margin-right: 5px;
+    font-size: 16px;
   }
 
   .square-select {
