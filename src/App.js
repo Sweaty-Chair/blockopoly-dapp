@@ -12,7 +12,7 @@ class App extends Component {
     super(props)
 
     this.state = {
-      storageValue: 0,
+      currentBid: 0,
       web3: null
     }
   }
@@ -63,17 +63,34 @@ class App extends Component {
           landPotAuctionInstance: instance
         })
         // Gets auction ending time.
-        return this.state.landPotAuctionInstance.getEndingTime.call()
-      }).then((result) => {
-        const endingDate = new Date(0)
-        endingDate.setUTCSeconds(result.toNumber())
-        console.log(endingDate)
-        // TODO
+        this.state.landPotAuctionInstance.getEndingTime.call().then((result) => {
+          const endingDate = new Date(0)
+          endingDate.setUTCSeconds(result.toNumber())
+          console.log(endingDate)
+        })
         // Gets all plots.
-        return this.state.landPotAuctionInstance.getPlots.call()
-      }).then((result) => {
-        console.log(result)
-        // TODO
+        this.state.landPotAuctionInstance.getPlots.call().then((result) => {
+          console.log(result)
+        })
+        // Gets plot info of (0,0).
+        this.state.landPotAuctionInstance.getPlot.call(0,0).then((result) => {
+          console.log(result)
+          this.setState({currentBid: this.state.web3.utils.fromWei(result[4].toString())})
+          this.setState({bidder: result[2]})
+        })
+
+        // Listen events
+        // this.state.landPotAuctionInstance.events.Bid({
+        //   filter: { bidder: this.state.accounts[0] }
+        // })
+        // .then((error, events) => {
+        //   console.log(events);
+        // })
+
+        // this.state.landPotAuctionInstance.Bid({}, {fromBlock:0, toBlock:'latest'}).get(function(err, results){
+        //   console.log(results);
+        // })
+
       })
     })
   }
@@ -83,7 +100,10 @@ class App extends Component {
     const bidPrice = this.refs.Input.value
     console.log(bidPrice)
     // Send bid request, TODO: handle the result accordingly
-    return this.state.landPotAuctionInstance.bid(0, 0, 0, { from: this.state.accounts[0], value: this.state.web3.utils.toWei((bidPrice), 'ether'), gasPrice: 20e9, gas: 150000 })
+    return this.state.landPotAuctionInstance.bid.sendTransaction(0, 0, 0, { from: this.state.accounts[0], value: this.state.web3.utils.toWei((bidPrice), 'ether'), gasPrice: 20e9, gas: 130000 })
+    .once('receipt', (receipt) => {
+      console.log(receipt)
+    })
     .then((txhash) => {
       console.log('bid sent')
       // $('#transaction-status').html('Successfully placed bid, please wait for the transaction complete. <br />Transaction Hash: ' + getTransactionUrl(hash))
@@ -125,9 +145,9 @@ class App extends Component {
               <h1>Good to Go!</h1>
               <p>Your Truffle Box is installed and ready.</p>
               <h2>Smart Contract Example</h2>
-              <p>If your contracts compiled and migrated successfully, below will show a stored value of 5 (by default).</p>
-              <p>Try changing the value stored on <strong>line 59</strong> of App.js.</p>
-              <p>The stored value is: {this.state.storageValue}</p>
+              <p>If your contracts compiled and migrated successfully.</p>
+              <p>Bidder of (0,0) is: {this.state.bidder}</p>
+              <p>The current bid of (0,0) is: {this.state.currentBid}</p>
               <input type="text" ref="Input" name="input" />
               <button onClick={this.handleBid}>Bid</button>
             </div>

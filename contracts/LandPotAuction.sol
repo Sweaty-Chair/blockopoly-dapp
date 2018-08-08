@@ -51,7 +51,7 @@ contract LandPotAuction is Pausable {
   uint256 public totalBalances;
 
   // Current auction
-  Auction public currentAuction;
+  Auction public currentAuction; 
 
   // Past auctions
   mapping(uint32 => Auction[]) public pastAuctions; // WorldId => Auction array
@@ -187,18 +187,19 @@ contract LandPotAuction is Pausable {
   /**
    * @dev Bids on a plot by anyone.
    */
-  function bid(int8 i, int8 j, uint8 team) external payable whenNotPaused canBid {
+  function bid(int8 i, int8 j, uint8 team) external payable whenNotPaused canBid returns(bool succeeded) {
     uint8 k = plotPositionToIndex(i, j);
     Plot storage plot = currentAuction.plots[k];
-    uint256 newBid = balances[msg.sender].add(msg.value);
-    require(newBid >= plot.currentBid.add(1 finney)); // Must larger than current bid by 1 finney
-    if (newBid <= plot.maxBid) { // Failed to outbid current bidding, less than its max bid
-      // emit OutBid(plot.x, plot.y, plot.bidder, msg.sender, team, newBid);
-      newBid = newBid.add(1 finney); // Add a finney to the current bid
-      plot.currentBid = newBid; // Increase the current bid
-      emit OutBid(plot.x, plot.y, msg.sender, plot.bidder, plot.team, newBid);
-      revert();
+    uint256 newMaxBid = balances[msg.sender].add(msg.value);
+    require(newMaxBid >= plot.currentBid.add(1 finney), "Less than current bid"); // Must larger than current bid by 1 finney
+    if (newMaxBid <= plot.maxBid) { // Failed to outbid current bidding, less than its max bid
+      newMaxBid = newMaxBid.add(1 finney); // Add a finney to the current bid
+      plot.currentBid = newMaxBid; // Increase the current bid
+      emit OutBid(plot.x, plot.y, msg.sender, plot.bidder, plot.team, newMaxBid);
+      return false;
     }
+    uint256 newCurrentBid = plot.maxBid.add(1 finney);
+    emit OutBid(plot.x, plot.y, plot.bidder, msg.sender, team, newCurrentBid);
     if (plot.bidder != address(0)) { // Add the bid of the old bidder to balance, so he can withdraw/reuse later
       totalBalances = totalBalances.add(plot.maxBid);
       balances[plot.bidder] = balances[plot.bidder].add(plot.maxBid);
@@ -206,9 +207,10 @@ contract LandPotAuction is Pausable {
     emptyMyBalance(); // No more balance
     plot.bidder = msg.sender;
     plot.team = team;
-    plot.currentBid = plot.maxBid.add(1 finney);
-    plot.maxBid = newBid;
-    emit Bid(plot.x, plot.y, plot.bidder, team, plot.currentBid);
+    plot.currentBid = newCurrentBid;
+    plot.maxBid = newMaxBid;
+    emit Bid(plot.x, plot.y, plot.bidder, team, newCurrentBid);
+    return true;
   }
 
   /**
@@ -227,7 +229,7 @@ contract LandPotAuction is Pausable {
       }
     }
   }
-
+  
   /**
    * @dev Gets the max bid of sender at specfic plot.
    */
@@ -259,8 +261,10 @@ contract LandPotAuction is Pausable {
    * @dev Empties the balance of sender, internal use only.
    */
   function emptyMyBalance() internal {
-    totalBalances = totalBalances.sub(balances[msg.sender]);
-    balances[msg.sender] = 0;
+    if (balances[msg.sender] > 0) { // Skip if no balance, for saving gas
+      totalBalances = totalBalances.sub(balances[msg.sender]);
+      balances[msg.sender] = 0;
+    }
   }
   
   /**
