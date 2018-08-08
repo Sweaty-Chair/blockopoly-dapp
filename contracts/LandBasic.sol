@@ -2,7 +2,7 @@ pragma solidity ^0.4.24;
 
 
 /**
- * @title BidLand interface
+ * @title Land interface
  */
 contract LandBasic {
   function createAndTransfer(address _to, uint32 _world, int64 _x, int64 _y) public;

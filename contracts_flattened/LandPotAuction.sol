@@ -3,7 +3,7 @@ pragma solidity ^0.4.24;
 // File: contracts/LandBasic.sol
 
 /**
- * @title BidLand interface
+ * @title Land interface
  */
 contract LandBasic {
   function createAndTransfer(address _to, uint32 _world, int64 _x, int64 _y) public;
@@ -231,7 +231,7 @@ contract LandPotAuction is Pausable {
   uint256 public totalBalances;
 
   // Current auction
-  Auction public currentAuction;
+  Auction public currentAuction; 
 
   // Past auctions
   mapping(uint32 => Auction[]) public pastAuctions; // WorldId => Auction array
@@ -370,25 +370,26 @@ contract LandPotAuction is Pausable {
   function bid(int8 i, int8 j, uint8 team) external payable whenNotPaused canBid {
     uint8 k = plotPositionToIndex(i, j);
     Plot storage plot = currentAuction.plots[k];
-    uint256 newBid = balances[msg.sender].add(msg.value);
-    require(newBid >= plot.currentBid.add(1 finney)); // Must larger than current bid
-    if (newBid <= plot.maxBid) { // Failed to outbid current bidding, less than its max bid
-      emit OutBid(plot.x, plot.y, plot.bidder, msg.sender, team, newBid);
-      newBid = newBid.add(1 finney); // Add a finney to the current bid
-      plot.currentBid = newBid; // Increase the current bid
-      emit OutBid(plot.x, plot.y, msg.sender, plot.bidder, plot.team, newBid);
-      revert();
+    uint256 newMaxBid = balances[msg.sender].add(msg.value);
+    require(newMaxBid >= plot.currentBid.add(1 finney), "Less than current bid"); // Must larger than current bid by 1 finney
+    if (newMaxBid <= plot.maxBid) { // Failed to outbid current bidding, less than its max bid
+      newMaxBid = newMaxBid.add(1 finney); // Add a finney to the current bid
+      plot.currentBid = newMaxBid; // Increase the current bid
+      emit OutBid(plot.x, plot.y, msg.sender, plot.bidder, plot.team, newMaxBid);
+    } else {
+      uint256 newCurrentBid = plot.maxBid.add(1 finney);
+      emit OutBid(plot.x, plot.y, plot.bidder, msg.sender, team, newCurrentBid);
+      if (plot.bidder != address(0)) { // Add the bid of the old bidder to balance, so he can withdraw/reuse later
+        totalBalances = totalBalances.add(plot.maxBid);
+        balances[plot.bidder] = balances[plot.bidder].add(plot.maxBid);
+      }
+      emptyMyBalance(); // No more balance
+      plot.bidder = msg.sender;
+      plot.team = team;
+      plot.currentBid = newCurrentBid;
+      plot.maxBid = newMaxBid;
+      emit Bid(plot.x, plot.y, plot.bidder, team, newCurrentBid);
     }
-    if (plot.bidder != address(0)) { // Add the bid of the old bidder to balance, so he can withdraw later
-      totalBalances = totalBalances.add(plot.maxBid);
-      balances[plot.bidder] = balances[plot.bidder].add(plot.maxBid);
-    }
-    emptyMyBalance(); // No more balance
-    plot.bidder = msg.sender;
-    plot.team = team;
-    plot.currentBid = plot.maxBid.add(1 finney);
-    plot.maxBid = newBid;
-    emit Bid(plot.x, plot.y, plot.bidder, team, plot.currentBid);
   }
 
   /**
@@ -407,7 +408,7 @@ contract LandPotAuction is Pausable {
       }
     }
   }
-
+  
   /**
    * @dev Gets the max bid of sender at specfic plot.
    */
@@ -415,20 +416,6 @@ contract LandPotAuction is Pausable {
     Plot storage plot = currentAuction.plots[plotPositionToIndex(i, j)];
     require(plot.bidder == msg.sender); // Only bidder can get the max bid
     return plot.maxBid;
-  }
-  
-  /**
-   * @dev Gets the outbid balance of an address.
-   */
-  function balanceOf(address who) public view returns (uint256) {
-    return balances[who];
-  }
-
-  /**
-   * @dev Gets the outbid balance of sender.
-   */
-  function balanceOfMe() external view returns (uint256) {
-    return balanceOf(msg.sender);
   }
   
   /**
@@ -446,8 +433,10 @@ contract LandPotAuction is Pausable {
    * @dev Empties the balance of sender, internal use only.
    */
   function emptyMyBalance() internal {
-    totalBalances = totalBalances.sub(balances[msg.sender]);
-    balances[msg.sender] = 0;
+    if (balances[msg.sender] > 0) { // Skip if no balance, for saving gas
+      totalBalances = totalBalances.sub(balances[msg.sender]);
+      balances[msg.sender] = 0;
+    }
   }
   
   /**

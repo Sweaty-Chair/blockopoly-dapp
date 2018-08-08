@@ -1,5 +1,5 @@
-// var HDWalletProvider = require("truffle-hdwallet-provider")
-// var mnemonic = "easily change airport frog pencil tube core edit kangaroo correct famous border";
+var HDWalletProvider = require("truffle-hdwallet-provider")
+require('dotenv').config()
 
 module.exports = {
   networks: {
@@ -8,17 +8,23 @@ module.exports = {
       port: 7545, // Ganache
       network_id: "*", // Match any network id
     },
-    // ropsten: {
-    //   provider: new HDWalletProvider(mnemonic, "https://ropsten.infura.io/v3/6469dd6b6c614a20ab3efb85cc1c7b1d"),
-    //   network_id: 3
-    // },
-    // rinkeby: {
-    //   provider: new HDWalletProvider(mnemonic, "https://rinkeby.infura.io/v3/6469dd6b6c614a20ab3efb85cc1c7b1d"),
-    //   network_id: 4
-    // },
-    // kovan: {
-    //   provider: new HDWalletProvider(mnemonic, "https://kovan.infura.io/v3/6469dd6b6c614a20ab3efb85cc1c7b1d"),
-    //   network_id: 42
-    // }
+    ropsten: {
+      provider: () => new HDWalletProvider(process.env.MNENOMIC, "https://ropsten.infura.io/v3/" + process.env.INFURA_API_KEY),
+      network_id: 3,
+      gas: 6500000,
+      gasPrice: 21
+    },
+    rinkeby: {
+      provider: () => new HDWalletProvider(process.env.MNENOMIC, "https://rinkeby.infura.io/v3/" + process.env.INFURA_API_KEY),
+      network_id: 4,
+      gas: 6500000,
+      gasPrice: 1
+    },
+    kovan: {
+      provider: () => new HDWalletProvider(process.env.MNENOMIC, "https://kovan.infura.io/v3/" + process.env.INFURA_API_KEY),
+      network_id: 42,
+      gas: 6500000,
+      gasPrice: 1
+    }
   }
 }

@@ -3,10 +3,10 @@ var BidLand = artifacts.require("./BidLand.sol");
 var LandPotAuction = artifacts.require("./LandPotAuction.sol");
 
 // module.exports = async (deployer) => {
-//   await deployer.deploy(World);
-//   await deployer.deploy(BidLand, World.address);
-//   await deployer.deploy(LandPotAuction, BidLand.address);
-// };
+//   await deployer.deploy(World)
+//   await deployer.deploy(BidLand, World.address)
+//   await deployer.deploy(LandPotAuction, BidLand.address)
+// }
 
 module.exports = (deployer) => {
   deployer.deploy(World).then(() => {
@@ -14,4 +14,4 @@ module.exports = (deployer) => {
       return deployer.deploy(LandPotAuction, BidLand.address)
     })
   })
-};
+}

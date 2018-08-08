@@ -13,13 +13,12 @@ module.exports = (deployer, network, accounts) => {
       return LandPotAuction.deployed().then((instance) => {
         landPotAuctionInstance = instance
         return worldInstance.create(0).then((error, result) => {
-          // return bidLandInstance.authorize(landPotAuctionInstance.address)
-          // return bidLandInstance.authorize(LandPotAuction.address).then(() => {
+          return bidLandInstance.authorize(LandPotAuction.address).then(() => {
             return landPotAuctionInstance.startAuction(1, 1)
             // return landPotAuctionInstance.startAuction(1, 1).then(() => {
               // return landPotAuctionInstance.getEndingTime.call()
             // })
-          // })
+          })
         })
       })
     })

@@ -85,56 +85,81 @@ contract('LandPotAuction', (accounts) => {
       this.logs = logs
     })
 
-    it('success bid on empty plot', async () => {
-      const data = await this.landPotAuction.getPlot.call(0, 0)
-      data[2].should.eq(bidder1)
-      data[3].should.be.bignumber.equal(team1)
-      data[4].should.be.bignumber.equal(finney.toNumber()) // first bit is always 1 finney
+    describe('succeed bid on empty plot', () => {
+      it('current bidder and bid changed', async () => {
+        const data = await this.landPotAuction.getPlot.call(0, 0)
+        data[2].should.eq(bidder1)
+        data[3].should.be.bignumber.equal(team1)
+        data[4].should.be.bignumber.equal(finney) // first bit is always 1 finney
+      })
+      it('emitted Bid event', async () => {
+        const event = await inLogs(this.logs, 'Bid')
+        event.args.x.should.be.bignumber.equal(0)
+        event.args.y.should.be.bignumber.equal(0)
+        event.args.bidder.should.eq(bidder1)
+        event.args.team.should.be.bignumber.equal(team1)
+        event.args.currentBid.should.be.bignumber.equal(finney) // first bit is always 1 finney
+      })
     })
 
-    it('emits a bid event', async () => {
-      const event = await inLogs(this.logs, 'Bid')
-      event.args.x.should.be.bignumber.equal(0)
-      event.args.y.should.be.bignumber.equal(0)
-      event.args.bidder.should.eq(bidder1)
-      event.args.team.should.be.bignumber.equal(team1)
-      event.args.currentBid.should.be.bignumber.equal(finney.toNumber()) // first bit is always 1 finney
+    describe('failed bid with low price', () => {
+      beforeEach(async () => {
+        const { logs } = await this.landPotAuction.bid(0, 0, team2, { from: bidder2, value: bid2failed });
+        this.logs = logs
+      })
+      it('current bidder didnt changed but current bid changed', async () => {
+        const data = await this.landPotAuction.getPlot.call(0, 0)
+        data[2].should.eq(bidder1)
+        data[3].should.be.bignumber.equal(team1)
+        data[4].should.be.bignumber.equal(ether(0.201)) // current bid should be bid price + 1 finney
+      })
+      it('emitted OutBid event', async () => {
+        const event = await inLogs(this.logs, 'OutBid')
+        event.args.x.should.be.bignumber.equal(0)
+        event.args.y.should.be.bignumber.equal(0)
+        event.args.oldBidder.should.eq(bidder2)
+        event.args.bidder.should.eq(bidder1)
+        event.args.team.should.be.bignumber.equal(team1)
+        event.args.currentBid.should.be.bignumber.equal(ether(0.201))
+      })
     })
 
-    it('gets outbid with low price', async () => {
-      const { logs } = await this.landPotAuction.bid(0, 0, team2, { from: bidder2, value: bid2failed });
-      const data = await this.landPotAuction.getPlot.call(0, 0)
-      data[2].should.eq(bidder1)
-      data[3].should.be.bignumber.equal(team1)
-      data[4].should.be.bignumber.equal(ether(0.201).toNumber()) // current bid should be bid price + 1 finney
-      const event = await inLogs(logs, 'OutBid')
-      event.args.x.should.be.bignumber.equal(0)
-      event.args.y.should.be.bignumber.equal(0)
-      event.args.oldBidder.should.eq(bidder2)
-      event.args.bidder.should.eq(bidder1)
-      event.args.team.should.be.bignumber.equal(team1)
-      event.args.currentBid.should.be.bignumber.equal(ether(0.201).toNumber())
-    })
-
-    it('success bid with higher price', async () => {
-      const { logs } = await this.landPotAuction.bid(0, 0, team2, { from: bidder2, value: bid2success });
-      const data = await this.landPotAuction.getPlot.call(0, 0)
-      data[2].should.eq(bidder2)
-      data[3].should.be.bignumber.equal(team2)
-      data[4].should.be.bignumber.equal(ether(0.501).toNumber())
-      let event = await inLogs(logs, 'OutBid')
-      event.args.x.should.be.bignumber.equal(0)
-      event.args.y.should.be.bignumber.equal(0)
-      event.args.oldBidder.should.eq(bidder1)
-      event.args.bidder.should.eq(bidder2)
-      event.args.team.should.be.bignumber.equal(team2)
-      event.args.currentBid.should.be.bignumber.equal(ether(0.501).toNumber())
-      event = await inLogs(logs, 'Bid')
-      event.args.x.should.be.bignumber.equal(0)
-      event.args.y.should.be.bignumber.equal(0)
-      event.args.bidder.should.eq(bidder2)
-      event.args.team.should.be.bignumber.equal(team2)
-      event.args.currentBid.should.be.bignumber.equal(ether(0.501).toNumber())
+    describe('success bid with higher price', () => {
+      beforeEach(async () => {
+        const { logs } = await this.landPotAuction.bid(0, 0, team2, { from: bidder2, value: bid2success });
+        this.logs = logs
+      })
+      it('current bidder and bid changed', async () => {
+        const data = await this.landPotAuction.getPlot.call(0, 0)
+        data[2].should.eq(bidder2)
+        data[3].should.be.bignumber.equal(team2)
+        data[4].should.be.bignumber.equal(ether(0.501).toNumber())
+      })
+      it('emitted OutBid event', async () => {
+        let event = await inLogs(this.logs, 'OutBid')
+        event.args.x.should.be.bignumber.equal(0)
+        event.args.y.should.be.bignumber.equal(0)
+        event.args.oldBidder.should.eq(bidder1)
+        event.args.bidder.should.eq(bidder2)
+        event.args.team.should.be.bignumber.equal(team2)
+        event.args.currentBid.should.be.bignumber.equal(ether(0.501).toNumber())
+      })
+      it('emitted Bid event', async () => {
+        event = await inLogs(this.logs, 'Bid')
+        event.args.x.should.be.bignumber.equal(0)
+        event.args.y.should.be.bignumber.equal(0)
+        event.args.bidder.should.eq(bidder2)
+        event.args.team.should.be.bignumber.equal(team2)
+        event.args.currentBid.should.be.bignumber.equal(ether(0.501).toNumber())
+      })
+      it('total balances added', async () => {
+        const totalBalance = await this.landPotAuction.totalBalance.call()
+        totalBalance.should.be.bignumber.equal(bid1)
+      })
+      it('correct balance of first bidder', async () => {
+        const balance = await this.landPotAuction.balanceOfMe.call({ from: bidder1 })
+        balance.should.be.bignumber.equal(bid1)
+      })
     })
   })
 

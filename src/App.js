@@ -13,6 +13,9 @@ class App extends Component {
 
     this.state = {
       currentBid: 0,
+      totalBalance: 0,
+      balanceOfMe: 0,
+      accounts: [],
       web3: null
     }
   }
@@ -78,6 +81,16 @@ class App extends Component {
           this.setState({currentBid: this.state.web3.utils.fromWei(result[4].toString())})
           this.setState({bidder: result[2]})
         })
+        // Get total balance.
+        this.state.landPotAuctionInstance.totalBalance.call().then((result) => {
+          console.log(result.toNumber())
+          this.setState({totalBalance: this.state.web3.utils.fromWei(result.toString())})
+        })
+        // Get balance of me.
+        this.state.landPotAuctionInstance.balances.call(accounts[0]).then((result) => {
+          console.log(result.toNumber())
+          this.setState({balanceOfMe: this.state.web3.utils.fromWei(result.toString())})
+        })
 
         // Listen events
         // this.state.landPotAuctionInstance.events.Bid({
@@ -100,10 +113,7 @@ class App extends Component {
     const bidPrice = this.refs.Input.value
     console.log(bidPrice)
     // Send bid request, TODO: handle the result accordingly
-    return this.state.landPotAuctionInstance.bid.sendTransaction(0, 0, 0, { from: this.state.accounts[0], value: this.state.web3.utils.toWei((bidPrice), 'ether'), gasPrice: 20e9, gas: 130000 })
-    .once('receipt', (receipt) => {
-      console.log(receipt)
-    })
+    return this.state.landPotAuctionInstance.bid(0, 0, 0, { from: this.state.accounts[0], value: this.state.web3.utils.toWei((bidPrice), 'ether'), gasPrice: 20e9, gas: 130000 })
     .then((txhash) => {
       console.log('bid sent')
       // $('#transaction-status').html('Successfully placed bid, please wait for the transaction complete. <br />Transaction Hash: ' + getTransactionUrl(hash))
@@ -113,6 +123,9 @@ class App extends Component {
     .catch((error) => {
       console.error(error)
     })
+    // .once('receipt', (receipt) => {
+    //   console.log(receipt)
+    // })
   }
 
   getTransactionUrl (address) {
@@ -146,8 +159,11 @@ class App extends Component {
               <p>Your Truffle Box is installed and ready.</p>
               <h2>Smart Contract Example</h2>
               <p>If your contracts compiled and migrated successfully.</p>
+              <p>Your address is: {this.state.accounts[0]}</p>
               <p>Bidder of (0,0) is: {this.state.bidder}</p>
-              <p>The current bid of (0,0) is: {this.state.currentBid}</p>
+              <p>Current bid of (0,0) is: {this.state.currentBid}</p>
+              <p>Total balance: {this.state.totalBalance}</p>
+              <p>Balance of me: {this.state.balanceOfMe}</p>
               <input type="text" ref="Input" name="input" />
               <button onClick={this.handleBid}>Bid</button>
             </div>

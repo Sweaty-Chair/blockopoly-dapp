@@ -7,7 +7,7 @@ import "openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
 /**
 * @title Block42 land token contract
 * @author Richard Fu (richardf@block42.world)
-* @dev Complant with OpenZeppelin's implementation of the ERC721 spec
+* @dev Complants with OpenZeppelin's implementation of the ERC721 spec
 */
 
 contract World is ERC721Token, Pausable {
