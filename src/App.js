@@ -121,19 +121,6 @@ class App extends Component {
     console.log('bid clicked')
     const bidPrice = this.refs.Input.value
     console.log(bidPrice)
-    // return this.state.landPotAuctionInstance.bid(0, 0, 0, { from: this.state.accounts[0], value: this.state.web3.utils.toWei((bidPrice), 'ether'), gasPrice: 20e9, gas: 130000 })
-    // .then((txhash) => {
-    //   console.log('bid sent')
-    //   // $('#transaction-status').html('Successfully placed bid, please wait for the transaction complete. <br />Transaction Hash: ' + getTransactionUrl(hash))
-    //   console.log('Successfully placed bid, please wait for the transaction complete. <br />Transaction Hash: ' + this.getTransactionUrl(txhash.tx))
-    //   // TODO
-    // })
-    // .catch((error) => {
-    //   console.error(error)
-    // })
-    // .once('receipt', (receipt) => {
-    //   console.log(receipt)
-    // })
     this.state.landPotAuctionInstance.bid(0, 0, 0, { from: this.state.accounts[0], value: this.state.web3.utils.toWei((bidPrice), 'ether'), gasPrice: 20e9, gas: 130000 })
     .then((txhash) => {
       console.log('bid sent')
@@ -152,25 +139,6 @@ class App extends Component {
       else
         console.log("Failed with error: " + error.message.replace("Error: ", ""))
     })
-//     this.state.web3.eth.sendTransaction({
-//       from: this.state.accounts[0],
-//       value: this.state.web3.utils.toWei(bidPrice, 'ether'),
-//       to: this.state.landPotAuctionInstance.address,
-//       gasPrice: 20e9
-//     })
-//     .once('transactionHash', function (hash) {
-//       console.log(hash);
-//       // $('#transaction-status').html('Your contribution is being processed... <br />Transaction Hash: ' + getTransactionUrl(hash))
-//     })
-//     .once('receipt', function (receipt) {
-//       console.log(receipt);
-//       // $('#transaction-status').html('Congrates! Your contribution has been processed and you received new CUBIKs!')
-//     })
-// //    .on('confirmation', function(confNumber, receipt){ console.log("confirmation"); console.log(confNumber); console.log(receipt); })
-//     .on('error', function (error) {
-//       console.error(error);
-//       // $('#transaction-status').html('There was an error processing your contribution.<br />' + String(error))
-//     })
   }
 
   waitForReceipt(txhash, callback) {
