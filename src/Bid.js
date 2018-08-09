@@ -320,6 +320,11 @@ class Bid extends React.Component {
             // this.setState({ currentBid: this.state.web3.utils.fromWei(result[4].toString()) })
             // this.setState({ bidder: result[2] })
         })
+        this.state.landPotAuctionInstance.getEndingTime().then((result) => {
+            const endingDate = new Date(0);
+            endingDate.setUTCSeconds(result.toNumber())
+            END_DATE = endingDate
+        })
         // Gets total balance.
         this.state.landPotAuctionInstance.totalBalance().then((result) => {
             // console.log(result.toNumber())
