@@ -315,7 +315,7 @@ class Bid extends React.Component {
             }
             this.setState({
                 board: { squares: newSquares },
-            })
+            }, () => { this.updateScores() })
             // console.log(result)
             // this.setState({ currentBid: this.state.web3.utils.fromWei(result[4].toString()) })
             // this.setState({ bidder: result[2] })
