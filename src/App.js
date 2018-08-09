@@ -136,7 +136,7 @@ class App extends Component {
       // $('#transaction-status').html('Successfully placed bid, please wait for the transaction complete. <br />Transaction Hash: ' + getTransactionUrl(hash))
       console.log('Successfully placed bid, please wait for the transaction complete. <br />Transaction Hash: ' + this.getTransactionUrl(txhash.tx))
       this.waitForReceipt(txhash.tx, () => {
-        console.log('Bid successfully process, updating plots...')
+        console.log('Transaction successfully proceed, updating UI...')
       })
     })
     .catch((error) => {
