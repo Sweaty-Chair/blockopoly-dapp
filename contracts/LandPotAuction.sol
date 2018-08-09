@@ -200,6 +200,9 @@ contract LandPotAuction is Pausable {
     if (newMaxBid <= plot.maxBid) { // Failed to outbid current bidding, less than its max bid
       newMaxBid = newMaxBid.add(1 finney); // Add a finney to the current bid
       plot.currentBid = newMaxBid; // Increase the current bid
+      // Add the current bid to balance, so the bidder can withdraw/reuse later
+      totalBalance = totalBalance.add(msg.value);
+      balances[plot.bidder] = (balances[plot.bidder]).add(msg.value);
       emit Bid(plot.x, plot.y, msg.sender, plot.bidder, plot.team, newMaxBid);
     } else {
       uint256 newCurrentBid = plot.maxBid.add(1 finney);
