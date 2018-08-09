@@ -214,6 +214,7 @@ class Bid extends React.Component {
         this.handleBidChange = this.handleBidChange.bind(this);
         this.bidCountdown = this.bidCountdown.bind(this);
         this.updateScores = this.updateScores.bind(this);
+        this.checkAccounts = this.checkAccounts.bind(this);
         this.state = {
             web3: null,
             teams: ["team-A", "team-B", "team-C", "team-D"],
@@ -225,7 +226,7 @@ class Bid extends React.Component {
             timeLeft: 'Action Closed',
             countdownInterval: null,
             landPotAuctionInstance: null,
-            accounts: null,
+            accounts: [],
             totalBalance: "",
             balanceOfMe: "",
         }
@@ -238,6 +239,8 @@ class Bid extends React.Component {
                 this.setState({
                     web3: results.web3
                 })
+
+            }).then(() => {
                 // Instantiate contract once web3 provided.
                 this.instantiateContract()
             })
@@ -257,58 +260,102 @@ class Bid extends React.Component {
     }
 
     instantiateContract() {
-        const contract = require('truffle-contract')
-        const landPotAuction = contract(LandPotAuctionContract)
-        landPotAuction.setProvider(this.state.web3.currentProvider)
-
         // Get network ids.
         this.state.web3.eth.net.getId().then((networkId) => {
-            console.log(networkId)
+            // console.log(networkId)
             this.setState({ netId: networkId })
         })
 
+        // Check accounts changed every 5 seconds.
+        this.checkAccounts()
+        setInterval(this.checkAccounts, 5000)
+    }
+    
+    checkAccounts() {
         // Get accounts.
         this.state.web3.eth.getAccounts((error, accounts) => {
-            landPotAuction.deployed().then((instance) => {
+            if (accounts[0] === undefined) {
+                // toggleMetaMaskPrompt(true)
+            } else if (this.state.accounts.length === 0 || accounts[0] !== this.state.accounts[0]) { // Account initialized or changed
+                // toggleMetaMaskPrompt(false)
                 this.setState({
-                    landPotAuctionInstance: instance,
-                    accounts: accounts,
+                    accounts: accounts
                 })
-                // Gets auction ending time.
-                instance.getEndingTime.call().then((result) => {
-                    const endingDate = new Date(0)
-                    endingDate.setUTCSeconds(result.toNumber())
-                    END_DATE = endingDate
-                    console.log(endingDate)
-                })
-                // Gets all plots.
-                instance.getPlots.call().then((result) => {
-                    const newSquares = this.state.board.squares.slice();
-                    for (let i = 0; i < 42; ++i) {
-                        if (result[4][i].toNumber() > 0) {
-                            console.log("square[" + i + "]: bid-" + result[4][i]);
-                            newSquares[i] = { team: this.state.teams[result[3][i].toNumber()], bid: this.state.web3.utils.fromWei(result[4][i].toString()) }
-                        }
-                    }
-                    this.setState({
-                        board: { squares: newSquares },
-                    });
-                    console.log(result)
-                })
-                // Get total balance.
-                instance.totalBalance.call().then((result) => {
-                    console.log(result.toNumber())
-                    this.setState({ totalBalance: this.state.web3.utils.fromWei(result.toString()) })
-                })
-                // Get balance of me.
-                instance.balances.call(accounts[0]).then((result) => {
-                    console.log(result.toNumber())
-                    this.setState({ balanceOfMe: this.state.web3.utils.fromWei(result.toString()) })
-                })
-            })
+                if (this.state.landPotAuction === undefined)
+                    this.initContract() // Initial contract if not yet done.
+                else
+                    this.updateContractDetail() // Update the UI with contract detail.
+            }
         })
     }
 
+    initContract() {
+        const contract = require('truffle-contract')
+        const landPotAuction = contract(LandPotAuctionContract)
+        landPotAuction.setProvider(this.state.web3.currentProvider)
+        // Get the contract instance.
+        landPotAuction.deployed().then((instance) => {
+            this.setState({
+                landPotAuctionInstance: instance
+            })
+            this.updateContractDetail()
+            this.watchEvents()
+        })
+    }
+
+    updateContractDetail() {
+        // Gets plots
+        this.state.landPotAuctionInstance.getPlots().then((result) => {
+            const newSquares = this.state.board.squares.slice();
+            for (let i = 0; i < 42; ++i) {
+                if (result[4][i].toNumber() > 0) {
+                    console.log("square[" + i + "]: bid:" + result[4][i]);
+                    newSquares[i] = { team: this.state.teams[result[3][i].toNumber()], bid: this.state.web3.utils.fromWei(result[4][i].toString()) }
+                }
+            }
+            this.setState({
+                board: { squares: newSquares },
+            })
+            // console.log(result)
+            // this.setState({ currentBid: this.state.web3.utils.fromWei(result[4].toString()) })
+            // this.setState({ bidder: result[2] })
+        })
+        // Gets total balance.
+        this.state.landPotAuctionInstance.totalBalance().then((result) => {
+            // console.log(result.toNumber())
+            this.setState({ totalBalance: this.state.web3.utils.fromWei(result.toString()) })
+        })
+        // Gets balance of me.
+        this.state.landPotAuctionInstance.balances(this.state.accounts[0]).then((result) => {
+            // console.log(result.toNumber())
+            this.setState({ balanceOfMe: this.state.web3.utils.fromWei(result.toString()) })
+        })
+    }
+
+    watchEvents() {
+        // Watches OutBid event.
+        this.state.landPotAuctionInstance.Bid({ block: 'latest' }).watch((error, result) => {
+            console.log(result)
+            if (!error) {
+                // Hint if I got outbid by others
+                if (result.args.oldBidder.toUpperCase() === this.state.accounts[0].toUpperCase())
+                    console.log("Ops... You are out-bid by " + result.args.bidder + " on (" + result.args.x + "," + result.args.y + ")! Current bid price became " + this.state.web3.utils.fromWei(result.args.currentBid.toString()) + " ETH, bid it back NOW!")
+                // Hint if I outbid others
+                if (result.args.bidder.toUpperCase() === this.state.accounts[0].toUpperCase()) {
+                    if (result.args.oldBidder === "0x0000000000000000000000000000000000000000") // No previous bidder
+                        console.log("You've successfully placed a bid on (" + result.args.x + "," + result.args.y + ")! Current bid price became " + this.state.web3.utils.fromWei(result.args.currentBid.toString()) + " ETH.")
+                    else
+                        console.log("Good job! You out-bid " + result.args.bidder + " on (" + result.args.x + "," + result.args.y + ")! Current bid price became " + this.state.web3.utils.fromWei(result.args.currentBid.toString()) + " ETH.")
+                }
+                // Change the displaying current bidder, bid price, and my balance
+                if (result.args.x.toNumber() === 0 && result.args.y.toNumber() === 0) {
+                    this.updateContractDetail() // Update the current bidder and bid price of (0,0), for demo, update everything for now
+                }
+            } else {
+                console.log(error)
+            }
+        })
+    }
 
     getTransactionUrl (address) {
         return this.getEtherScanUrl('tx', address)
@@ -379,20 +426,47 @@ class Bid extends React.Component {
         if (isNaN(teamId)) {
             console.log("Bid failed, invalid bidTeam: {" + bidTeam + "}");
         }
-        this.state.landPotAuctionInstance.bid(squareChainIndex.row, squareChainIndex.column, teamId, { from: this.state.accounts[0], value: this.state.web3.utils.toWei((bidPrice.toString()), 'ether'), gasPrice: 20e9, gas: 150000 })
+
+        this.state.landPotAuctionInstance.bid(squareChainIndex.row, squareChainIndex.column, teamId, { from: this.state.accounts[0], value: this.state.web3.utils.toWei((bidPrice.toString()), 'ether'), gasPrice: 20e9, gas: 130000 })
         .then((txhash) => {
           console.log('bid sent')
           console.log('Successfully placed bid, please wait for the transaction complete. <br />Transaction Hash: ' + this.getTransactionUrl(txhash.tx))
-          const newSquares = this.state.board.squares.slice();
-          newSquares[squareId] = {team: bidTeam, bid: bidPrice};
-          this.setState({
-              board: {squares: newSquares},
-          });
-        }).then(() => {
+          this.waitForReceipt(txhash.tx, () => {
+            console.log('Bid successfully process, updating plots...')
+            const newSquares = this.state.board.squares.slice();
+            newSquares[squareId] = {team: bidTeam, bid: bidPrice};
+            this.setState({
+                board: {squares: newSquares},
+            });
             this.updateScores();
-            console.log("balanceOfMe: " + this.state.landPotAuctionInstance.balanceOfMe().toString());
-        }).catch((error) => {
-          console.error(error)
+          })
+        }) 
+        .catch((error) => {
+          // console.log("Failed with error: " + error.toString().replace("Error: ", ""))
+          if (error.toString().includes("revert"))
+            console.log("Failed bidding: bid lower than the current bid")
+          else
+            console.log("Failed with error: " + error.message.replace("Error: ", ""))
+        })
+    }
+
+    waitForReceipt(txhash, callback) {
+        var self = this;
+        console.log(txhash)
+        this.state.web3.eth.getTransactionReceipt(txhash, (error, receipt) => {
+            if (error) {
+                console.log(error)
+            }
+            console.log(receipt)
+            if (receipt !== null) {
+                if (callback)
+                    callback(receipt)
+            } else {
+                // Try again in 1 second
+                window.setTimeout(function () {
+                    self.waitForReceipt(txhash, callback)
+                }, 1000)
+            }
         })
     }
 
