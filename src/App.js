@@ -61,9 +61,9 @@ class App extends Component {
           accounts: accounts
         })
         if (this.state.landPotAuction === undefined)
-          this.initContract()
+          this.initContract() // Initial contract if not yet done.
         else
-          this.updateContractDetail()
+          this.updateContractDetail() // Update the UI with contract detail.
       }
     })
   }
