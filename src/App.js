@@ -41,7 +41,7 @@ class App extends Component {
   instantiateContract() {    
     // Get network ids.
     this.state.web3.eth.net.getId().then((networkId) => {
-      console.log(networkId)
+      // console.log(networkId)
       this.setState({netId: networkId})
     })
     
@@ -74,46 +74,51 @@ class App extends Component {
         landPotAuctionInstance: instance
       })
       // Gets auction ending time.
-      this.state.landPotAuctionInstance.getEndingTime.call().then((result) => {
+      this.state.landPotAuctionInstance.getEndingTime().then((result) => {
         const endingDate = new Date(0)
         endingDate.setUTCSeconds(result.toNumber())
-        console.log(endingDate)
+        // console.log(endingDate)
       })
-      // Gets all plots.
-      this.state.landPotAuctionInstance.getPlots.call().then((result) => {
-        console.log(result)
-      })
+      // // Gets all plots.
+      // this.state.landPotAuctionInstance.getPlots().then((result) => {
+      //   console.log(result)
+      // })
       // Gets plot info of (0,0).
-      this.state.landPotAuctionInstance.getPlot.call(0,0).then((result) => {
-        console.log(result)
+      this.state.landPotAuctionInstance.getPlot(0,0).then((result) => {
+        // console.log(result)
         this.setState({currentBid: this.state.web3.utils.fromWei(result[4].toString())})
         this.setState({bidder: result[2]})
       })
       // Gets total balance.
-      this.state.landPotAuctionInstance.totalBalance.call().then((result) => {
-        console.log(result.toNumber())
+      this.state.landPotAuctionInstance.totalBalance().then((result) => {
+        // console.log(result.toNumber())
         this.setState({totalBalance: this.state.web3.utils.fromWei(result.toString())})
       })
       // Gets balance of me.
-      this.state.landPotAuctionInstance.balances.call(this.state.accounts[0]).then((result) => {
-        console.log(result.toNumber())
+      this.state.landPotAuctionInstance.balances(this.state.accounts[0]).then((result) => {
+        // console.log(result.toNumber())
         this.setState({balanceOfMe: this.state.web3.utils.fromWei(result.toString())})
       })
-
-      // Listens events.
-      this.state.landPotAuctionInstance.events.Bid({
-        filter: { bidder: this.state.accounts[0] }
+      // Watches OutBid event.
+      this.state.landPotAuctionInstance.Bid({ block: 'latest' }).watch((error, result) => {
+        if (!error) {
+          // Hint if I got outbid by others
+          if (result.args.oldBidder.toUpperCase() === this.state.accounts[0].toUpperCase())
+            console.log("Ops... You are out-bid by " + result.args.bidder + " on (" + result.args.x + "," + result.args.y + ")! Current bid price became " + this.state.web3.utils.fromWei(result.args.currentBid.toString()) + " ETH, bid it back NOW!")
+          // Hint if I outbid others
+          if (result.args.bidder.toUpperCase() === this.state.accounts[0].toUpperCase()) {
+            if (result.args.oldBidder === "0x0000000000000000000000000000000000000000") // No previous bidder
+              console.log("You've successfully placed a bid on (" + result.args.x + "," + result.args.y + ")! Current bid price became " + this.state.web3.utils.fromWei(result.args.currentBid.toString()) + " ETH.")
+            else
+              console.log("Good job! You out-bid " + result.args.bidder + " on (" + result.args.x + "," + result.args.y + ")! Current bid price became " + this.state.web3.utils.fromWei(result.args.currentBid.toString()) + " ETH.")
+          }
+          // Change the displaying bid price
+          if (result.args.x.toNumber() === 0 && result.args.y.toNumber() === 0)
+            this.setState({currentBid: this.state.web3.utils.fromWei(result.args.currentBid.toString())})
+        } else {
+          console.log(error)
+        }
       })
-      .then((error, events) => {
-        console.log("Bid - error=" + error);
-        console.log("Bid - events=" + events);
-      })
-
-      this.state.landPotAuctionInstance.Bid({}, {fromBlock:0, toBlock:'latest'}).get(function(error, results){
-        console.log("Bid - error=" + error);
-        console.log("Bid - results=" + results);
-      })
-
     })
   }
 
@@ -129,7 +134,7 @@ class App extends Component {
       this.waitForReceipt(txhash.tx, () => {
         console.log('Bid successfully process, updating plots...')
         //TODO
-        this.updateAccounts()
+        // this.updateAccounts()
       })
     })
     .catch((error) => {
@@ -141,14 +146,13 @@ class App extends Component {
     })
   }
 
+  // Waits for the transaction complete and execute a callback.
   waitForReceipt(txhash, callback) {
     var self = this;
-    console.log(txhash)
     this.state.web3.eth.getTransactionReceipt(txhash, (error, receipt) => {
       if (error) {
         console.log(error)
       }
-      console.log(receipt)
       if (receipt !== null) {
         if (callback)
           callback(receipt)

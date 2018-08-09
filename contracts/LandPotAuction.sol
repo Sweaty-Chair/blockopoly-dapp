@@ -32,8 +32,7 @@ contract LandPotAuction is Pausable {
     mapping(address => uint256) bids; // Keep track of all bids for final rewards
   }
 
-  event Bid(int8 x, int8 y, address indexed bidder, uint8 indexed team, uint256 currentBid);
-  event OutBid(int8 x, int8 y, address indexed oldBidder, address indexed bidder, uint8 indexed team, uint256 currentBid);
+  event Bid(int8 x, int8 y, address indexed oldBidder, address indexed bidder, uint8 team, uint256 currentBid);
   event Withdrawn(address indexed payee, uint256 weiAmount);
 
   uint8 constant PLOT_WIDTH = 7; // 7x6 plots
@@ -201,10 +200,10 @@ contract LandPotAuction is Pausable {
     if (newMaxBid <= plot.maxBid) { // Failed to outbid current bidding, less than its max bid
       newMaxBid = newMaxBid.add(1 finney); // Add a finney to the current bid
       plot.currentBid = newMaxBid; // Increase the current bid
-      emit OutBid(plot.x, plot.y, msg.sender, plot.bidder, plot.team, newMaxBid);
+      emit Bid(plot.x, plot.y, msg.sender, plot.bidder, plot.team, newMaxBid);
     } else {
       uint256 newCurrentBid = plot.maxBid.add(1 finney);
-      emit OutBid(plot.x, plot.y, plot.bidder, msg.sender, team, newCurrentBid);
+      emit Bid(plot.x, plot.y, plot.bidder, msg.sender, team, newCurrentBid);
       if (plot.bidder != address(0)) { // Add the bid of the old bidder to balance, so he can withdraw/reuse later
         totalBalance = totalBalance.add(plot.maxBid);
         balances[plot.bidder] = (balances[plot.bidder]).add(plot.maxBid);
@@ -214,7 +213,6 @@ contract LandPotAuction is Pausable {
       plot.team = team;
       plot.currentBid = newCurrentBid;
       plot.maxBid = newMaxBid;
-      emit Bid(plot.x, plot.y, plot.bidder, team, newCurrentBid);
     }
   }
 
