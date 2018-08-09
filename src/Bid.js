@@ -26,7 +26,7 @@ function Navbar(props) {
                     <button className="withdraw" onClick={props.Onclick}>Withdraw</button>
                 </div>
                 <div>
-                    <img  src='eth.png' alt="Bid Pool:"/>{props.pool}
+                    <img  src='eth.png' alt="Bid Pool:"/> {props.pool} ETH
                 </div>
 
             </nav>
@@ -226,7 +226,8 @@ class Bid extends React.Component {
             countdownInterval: null,
             landPotAuctionInstance: null,
             accounts: null,
-            poolBalance: "",
+            totalBalance: "",
+            balanceOfMe: "",
         }
     }
     componentWillMount() {
@@ -260,7 +261,11 @@ class Bid extends React.Component {
         const landPotAuction = contract(LandPotAuctionContract)
         landPotAuction.setProvider(this.state.web3.currentProvider)
 
-        // Declaring this for later so we can chain functions on landPotAuction.
+        // Get network ids.
+        this.state.web3.eth.net.getId().then((networkId) => {
+            console.log(networkId)
+            this.setState({ netId: networkId })
+        })
 
         // Get accounts.
         this.state.web3.eth.getAccounts((error, accounts) => {
@@ -269,36 +274,38 @@ class Bid extends React.Component {
                     landPotAuctionInstance: instance,
                     accounts: accounts,
                 })
-                console.log("land pot auction instance is set.");
                 // Gets auction ending time.
-                return instance.getEndingTime.call()
-            }).then((result) => {
-                // Set auction ending time.
-                const endingDate = new Date(0)
-                endingDate.setUTCSeconds(result.toNumber())
-                END_DATE = endingDate;
-                // Gets all plots.
-                return this.state.landPotAuctionInstance.getPlots.call()
-            }).then((result) => {
-                const newSquares = this.state.board.squares.slice();
-                for (let i = 0; i < 42; ++i) {
-                    if (result[4][i].toNumber() > 0) {
-                        console.log("square[" + i + "]: bid-" + result[4][i]);
-                        newSquares[i] = { team: this.state.teams[result[3][i].toNumber()], bid: this.state.web3.utils.fromWei(result[4][i].toString()) }
-                    }
-                }
-                this.setState({
-                    board: {squares: newSquares},
-                });
-                return this.state.landPotAuctionInstance.balanceOfMe.call()
-            }).then((balance) => {
-                // get pool balance
-                const b = balance.toNumber();
-                this.setState({
-                    poolBalance: b,
+                instance.getEndingTime.call().then((result) => {
+                    const endingDate = new Date(0)
+                    endingDate.setUTCSeconds(result.toNumber())
+                    END_DATE = endingDate
+                    console.log(endingDate)
                 })
-                console.log('current pool balance: ' + b);
-            }).then(() => {this.updateScores()})
+                // Gets all plots.
+                instance.getPlots.call().then((result) => {
+                    const newSquares = this.state.board.squares.slice();
+                    for (let i = 0; i < 42; ++i) {
+                        if (result[4][i].toNumber() > 0) {
+                            console.log("square[" + i + "]: bid-" + result[4][i]);
+                            newSquares[i] = { team: this.state.teams[result[3][i].toNumber()], bid: this.state.web3.utils.fromWei(result[4][i].toString()) }
+                        }
+                    }
+                    this.setState({
+                        board: { squares: newSquares },
+                    });
+                    console.log(result)
+                })
+                // Get total balance.
+                instance.totalBalance.call().then((result) => {
+                    console.log(result.toNumber())
+                    this.setState({ totalBalance: this.state.web3.utils.fromWei(result.toString()) })
+                })
+                // Get balance of me.
+                instance.balances.call(accounts[0]).then((result) => {
+                    console.log(result.toNumber())
+                    this.setState({ balanceOfMe: this.state.web3.utils.fromWei(result.toString()) })
+                })
+            })
         })
     }
 
@@ -474,7 +481,7 @@ class Bid extends React.Component {
         if (currentSquare) {
             currentSquarePrice = currentSquare.bid;
         }
-        let currentBalance = this.state.poolBalance;
+        let currentBalance = this.state.balanceOfMe;
         if (!currentBalance) {
             currentBalance = 0;
         }
