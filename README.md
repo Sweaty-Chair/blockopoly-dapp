@@ -98,3 +98,4 @@ To use this crowdsale page for your token ICO, change the token and crowdsale co
 [![Build Status](https://img.shields.io/travis/Block42World/landpot-dapp.svg?branch=master&style=flat-square)](https://travis-ci.org/Block42World/landpot-dapp)
 - Add CoverAlls badge
 [![Coverage Status](https://img.shields.io/coveralls/github/Block42World/landpot-dapp/master.svg?style=flat-square)](https://coveralls.io/github/Block42World/landpot-dapp?branch=master)
+- Add [Ethereum Blockies Base64](https://www.npmjs.com/package/ethereum-blockies-base64) as player icon
