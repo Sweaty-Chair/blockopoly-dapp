@@ -65,6 +65,12 @@ contract LandPotAuction is Pausable {
   }
 
   /**
+   * @dev fallback function reeiveing ether.
+   */
+  function() external payable {
+  }
+
+  /**
    * @dev Starts a new auction for a new land, contract owner only.
    */
   function startAuction(int64 x, int64 y) public onlyOwner {
