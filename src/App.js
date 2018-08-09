@@ -81,28 +81,30 @@ class App extends Component {
           this.setState({currentBid: this.state.web3.utils.fromWei(result[4].toString())})
           this.setState({bidder: result[2]})
         })
-        // Get total balance.
+        // Gets total balance.
         this.state.landPotAuctionInstance.totalBalance.call().then((result) => {
           console.log(result.toNumber())
           this.setState({totalBalance: this.state.web3.utils.fromWei(result.toString())})
         })
-        // Get balance of me.
+        // Gets balance of me.
         this.state.landPotAuctionInstance.balances.call(accounts[0]).then((result) => {
           console.log(result.toNumber())
           this.setState({balanceOfMe: this.state.web3.utils.fromWei(result.toString())})
         })
 
-        // Listen events
-        // this.state.landPotAuctionInstance.events.Bid({
-        //   filter: { bidder: this.state.accounts[0] }
-        // })
-        // .then((error, events) => {
-        //   console.log(events);
-        // })
+        // Listens events.
+        this.state.landPotAuctionInstance.events.Bid({
+          filter: { bidder: this.state.accounts[0] }
+        })
+        .then((error, events) => {
+          console.log("Bid - error=" + error);
+          console.log("Bid - events=" + events);
+        })
 
-        // this.state.landPotAuctionInstance.Bid({}, {fromBlock:0, toBlock:'latest'}).get(function(err, results){
-        //   console.log(results);
-        // })
+        this.state.landPotAuctionInstance.Bid({}, {fromBlock:0, toBlock:'latest'}).get(function(error, results){
+          console.log("Bid - error=" + error);
+          console.log("Bid - results=" + results);
+        })
 
       })
     })
@@ -162,6 +164,7 @@ class App extends Component {
               <p>Your address is: {this.state.accounts[0]}</p>
               <p>Bidder of (0,0) is: {this.state.bidder}</p>
               <p>Current bid of (0,0) is: {this.state.currentBid}</p>
+              <MaxBid isBidder={true} />
               <p>Total balance: {this.state.totalBalance}</p>
               <p>Balance of me: {this.state.balanceOfMe}</p>
               <input type="text" ref="Input" name="input" />
@@ -175,3 +178,7 @@ class App extends Component {
 }
 
 export default App
+
+function MaxBid(props) {
+  return <p>Max bid of (0,0) is: {this.state.maxBid}</p>
+}

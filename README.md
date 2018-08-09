@@ -18,7 +18,7 @@ Please note that this is still in prototype and under heavy development. The fin
 <!-- - Working with MetaMask, local and Infura nodes are commented and can be used for debugging -->
 - Prototype from [Truffle Box React](https://github.com/truffle-box/react-box)
 - [Bootstrap v4.1.3](https://getbootstrap.com/)
-- [Web3.js v1.0 beta 35] (https://web3js.readthedocs.io/en/1.0/web3.html)
+- [Web3.js v1.0 beta 35](https://web3js.readthedocs.io/en/1.0/web3.html)
 - [OpenZeppelin v1.11.0](https://github.com/OpenZeppelin/openzeppelin-solidity) solidity framework for best security and stability
 
 ## Getting Started
@@ -71,6 +71,9 @@ To build the application for production, use the build command. A production bui
 npm run build
 ```
 
+## Deployed demo
+- [Github Page](https://block42world.github.io/landpot-dapp/)
+
 <!-- ## Modification
 To use this crowdsale page for your token ICO, change the token and crowdsale contract address at [main.js](main.js). Then includes the truffle built JSONs, or simple change the ABI at [Cubik.json](js/Cubik.json) and [CubikCrowdsale.json](js/CubikCrowdsale.json). -->
 
@@ -85,8 +88,13 @@ To use this crowdsale page for your token ICO, change the token and crowdsale co
 - [create-react-app](https://github.com/facebook/create-react-app/)
 
 ## Helper Links
-- [Ethereum Kovan Faucet](https://faucet.kovan.radarrelay.com/)
+- [Ethereum Ropsten Faucet](http://faucet.ropsten.be:3001/)
+- [Ethereum Kovan Faucet](https://gitter.im/kovan-testnet/faucet)
 
 ## TODO
 - Fix contract event feedback currently not working with MetaMask
 - Add better graphic for MetaMask install instruction
+- Add Travis CI badge
+[![Build Status](https://img.shields.io/travis/Block42World/landpot-dapp.svg?branch=master&style=flat-square)](https://travis-ci.org/Block42World/landpot-dapp)
+- Add CoverAlls badge
+[![Coverage Status](https://img.shields.io/coveralls/github/Block42World/landpot-dapp/master.svg?style=flat-square)](https://coveralls.io/github/Block42World/landpot-dapp?branch=master)

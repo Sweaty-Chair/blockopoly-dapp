@@ -215,16 +215,16 @@ contract LandPotAuction is Pausable {
   /**
    * @dev Gets all contributed bids at all plots of the current auction.
    */
-  function getMyContributedBids() external view returns (int8[] xs, int8[] ys, uint256[] bids) {
+  function getContributedBids(address bidder) external view returns (int8[] xs, int8[] ys, uint256[] bids) {
     xs = new int8[](PLOT_COUNT);
     ys = new int8[](PLOT_COUNT);
     bids = new uint256[](PLOT_COUNT);
     for (uint8 k = 0; k < PLOT_COUNT; k++) {
       Plot storage p = currentAuction.plots[k];
-      if (p.bids[msg.sender] > 0) {
+      if (p.bids[bidder] > 0) {
         xs[k] = p.x;
         ys[k] = p.y;
-        bids[k] = p.bids[msg.sender];
+        bids[k] = p.bids[bidder];
       }
     }
   }
