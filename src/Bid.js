@@ -2,6 +2,8 @@ import React from 'react'
 import LandPotAuctionContract from '../build/contracts/LandPotAuction.json'
 import getWeb3 from './utils/getWeb3'
 
+import Square from './Square.js'
+
 import './css/oswald.css'
 import './css/open-sans.css'
 import './css/pure-min.css'
@@ -14,34 +16,6 @@ const DOUBLE_POS = [3, 8, 12, 29, 33, 38];
 const TRIPPLE_POS = [16, 18, 23, 25];
 const POINTS_POS = [0, 6, 35, 41];
 var END_DATE = new Date("Aug 8, 2018 0:0:0");
-
-function Square(props) {
-    const myId = props.id;
-    let className = "square";
-    let team;
-    let info;
-    if (props.isSelected) {
-        className += " square-select";
-    }
-    if (props.bidState) {
-        const teamName = props.bidState.team;
-        className += " " + teamName;
-        team = teamName.split("-")[1];
-    }
-    if (myId === 0 || myId === 6 || myId === 35 || myId === 41) {
-        info = "+10";
-    } else if (myId === 3 || myId === 8 || myId === 12 || myId === 29 || myId === 33 || myId === 38) {
-        info = "x2";
-    } else if (myId === 16 || myId === 18 || myId === 23 || myId === 25) {
-        info = "x3";
-    }
-    return (
-        <button className={className} onClick={props.onClick}>
-            {team}
-            <span className="square-info">{info}</span>
-        </button>
-    );
-}
 
 function Navbar(props) {
     return (
@@ -78,13 +52,35 @@ function TeamScore(props) {
 
 class Board extends React.Component {
     renderSquare(i) {
+        let className = "square";
+        let content = "";
+        let info = "";
+
+        // set className
+        if (this.props.selectId === i) {
+            className += " square-select";
+        }
+        // set content
+        let currentSquare = this.props.squares[i];
+        if (currentSquare) {
+            const teamName = currentSquare.team;
+            className += " " + teamName;
+            content = teamName.split("-")[1];
+        }
+        // set info
+        if (POINTS_POS.includes(i)) {
+            info = "+10";
+        } else if (DOUBLE_POS.includes(i)) {
+            info = "x2";
+        } else if (TRIPPLE_POS.includes(i)) {
+            info = "x3";
+        }
         return (
             <Square
-                selectId={this.props.selectId}
-                isSelected={this.props.selectId === i}
-                bidState={this.props.squares[i]}
+                className={className}
+                content={content}
+                info={info}
                 onClick={() => this.props.onClick(i)}
-                id={i}
             />
         );
     }
