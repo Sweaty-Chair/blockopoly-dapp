@@ -333,11 +333,11 @@ class Bid extends React.Component {
         //     console.log(result.toNumber())
         //     this.setState({ totalBalance: this.state.web3.utils.fromWei(result.toString()) })
         // })
-        // // Gets balance of me.
-        // this.state.landPotAuctionInstance.balances(this.state.accounts[0]).then((result) => {
+        // Gets balance of me.
+        this.state.landPotAuctionInstance.balances(this.state.accounts[0]).then((result) => {
         //     console.log(result.toNumber())
-        //     this.setState({ balanceOfMe: this.state.web3.utils.fromWei(result.toString()) })
-        // })
+            this.setState({ balanceOfMe: this.state.web3.utils.fromWei(result.toString()) })
+        })
     }
 
     watchEvents() {
@@ -556,9 +556,9 @@ class Bid extends React.Component {
         let currentSquarePrice;
         if (currentSquare) {
             currentSquarePrice = currentSquare.bid;
-            // if (currentSquare.bidder) {
-            //     squareBidder = makeBlockie(currentSquare.bidder);
-            // }
+            if (currentSquare.bidder) {
+                // squareBidder = makeBlockie(currentSquare.bidder);
+            }
         }
         let currentBalance = this.state.balanceOfMe;
         if (!currentBalance) {
@@ -566,9 +566,9 @@ class Bid extends React.Component {
         }
         
         let accountIcon = "user.png";
-        // if (this.state.accounts[0]) {
-        //     accountIcon = makeBlockie(this.state.accounts[0]);
-        // }
+        if (this.state.accounts[0]) {
+            // accountIcon = makeBlockie(this.state.accounts[0]);
+        }
         let scoreTable = [];
         for (let i = 0; i < teams.length; ++i) {
             let teamTag = teams[i].split("-")[1];

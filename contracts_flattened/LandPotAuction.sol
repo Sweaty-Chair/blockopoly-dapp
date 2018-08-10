@@ -212,8 +212,12 @@ contract LandPotAuction is Pausable {
     mapping(address => uint256) bids; // Keep track of all bids for final rewards
   }
 
-  event Bid(int8 x, int8 y, address indexed bidder, uint8 indexed team, uint256 currentBid);
-  event OutBid(int8 x, int8 y, address indexed oldBidder, address indexed bidder, uint8 indexed team, uint256 currentBid);
+  struct Team {
+    uint8 winnerPortion;
+    uint8 othersPortion;
+  }
+
+  event Bid(int8 x, int8 y, address indexed oldBidder, address indexed bidder, uint8 team, uint256 currentBid);
   event Withdrawn(address indexed payee, uint256 weiAmount);
 
   uint8 constant PLOT_WIDTH = 7; // 7x6 plots
@@ -228,7 +232,7 @@ contract LandPotAuction is Pausable {
 
   // The outbid balance all address, used for people withdraw
   mapping(address => uint256) public balances;
-  uint256 public totalBalances;
+  uint256 public totalBalance;
 
   // Current auction
   Auction public currentAuction; 
@@ -236,19 +240,32 @@ contract LandPotAuction is Pausable {
   // Past auctions
   mapping(uint32 => Auction[]) public pastAuctions; // WorldId => Auction array
   mapping(uint256 => Auction) public landAuction; // LandId (ERC721 token) => Auction
+  
+  // Teams
+  Team[] private teams_;
 
   // Contract of the ERC721 BidLand
   BidLandBasic internal bidLandContract_;
 
   constructor(address _bidLandAddress) public {
     bidLandContract_ = BidLandBasic(_bidLandAddress);
+    teams_.push(Team(40, 20));
+    teams_.push(Team(30, 30));
+    teams_.push(Team(20, 40));
+    teams_.push(Team(10, 50));
+  }
+
+  /**
+   * @dev fallback function reeiveing ether.
+   */
+  function() external payable {
   }
 
   /**
    * @dev Starts a new auction for a new land, contract owner only.
    */
   function startAuction(int64 x, int64 y) public onlyOwner {
-    require(currentAuction.endingTime < now);
+    require(currentAuction.endingTime < now, "Current auction not yet ended.");
     archiveCurrentAuction();
     currentAuction.x = x;
     currentAuction.y = y;
@@ -273,13 +290,46 @@ contract LandPotAuction is Pausable {
     // TODO
   }
 
+  /**
+   * @dev Ends the timer of the current auction manually, used for testing only.
+   */
   function endAuction() external onlyOwner {
-    archiveCurrentAuction();
-    currentAuction.x = 0;
-    currentAuction.y = 0;
     currentAuction.endingTime = uint64(now);
   }
 
+  /**
+   * @dev Finalizes the current auction and rewards the land to winner, after the auction ended.
+   */
+  function finalizeAuction(address winner, uint8 team) external onlyOwner {
+    require(currentAuction.endingTime < now, "Current auction not yet ended.");
+    uint256 totalBid = 0;
+    address[] memory otherWinners = new address[](PLOT_COUNT);
+    uint8 totalOtherWinners = 0;
+    // Run through all plots to get the total rewards
+    for (uint8 k = 0; k < PLOT_COUNT; k++) {
+      Plot storage plot = currentAuction.plots[k];
+      totalBid = totalBid.add(plot.currentBid);
+      if (plot.team == team && plot.bidder != winner) { // Gives back the
+        otherWinners[k] = plot.bidder;
+        totalOtherWinners++;
+      }
+      // Returns the extra bids to all bidders
+      balances[plot.bidder] = balances[plot.bidder].add(plot.maxBid.sub(plot.currentBid));
+    }
+    // Reward winner and others
+    balances[winner] = balances[winner].add(totalBid.mul(teams_[team].winnerPortion).div(100));
+    uint256 otherReward = totalBid.mul(teams_[team].othersPortion).div(100).div(totalOtherWinners);
+    for (k = 0; k < PLOT_COUNT; k++) {
+      if (otherWinners[k] != address(0))
+        balances[otherWinners[k]] = balances[otherWinners[k]].add(otherReward);
+    }
+    bidLandContract_.createAndTransfer(winner, currentWorldId, currentAuction.x, currentAuction.y);
+    bidLandContract_.setBidPrice(currentWorldId, currentAuction.x, currentAuction.y, totalBid);
+  }
+
+  /**
+   * @dev Internal function for archiving the currect auction.
+   */
   function archiveCurrentAuction() internal {
     if (currentAuction.x != 0 || currentAuction.y != 0)
       pastAuctions[currentWorldId].push(currentAuction);
@@ -290,7 +340,7 @@ contract LandPotAuction is Pausable {
    * @dev Restarts the whole game with new world ID. World ID must be created with World contract first.
    */
   function restartGame(uint32 _worldId, int64 x, int64 y) external onlyOwner {
-    require(currentAuction.endingTime < now);
+    require(currentAuction.endingTime < now, "Current auction not yet ended.");
     currentWorldId = _worldId;
     startAuction(x, y);
     // TODO
@@ -357,54 +407,78 @@ contract LandPotAuction is Pausable {
   }
 
   /**
+   * Sets the team portions, used by owner for balancing.
+   */
+  function setTeamPortions(uint8 team, uint8 winnerPortion, uint8 othersPortion) external onlyOwner {
+    teams_[team].winnerPortion = winnerPortion;
+    teams_[team].othersPortion = othersPortion;
+  }
+
+  /**
    * @dev Throws if auctioning land is (0,0), i.e. bidding closed.
    */
   modifier canBid() {
-    require(currentAuction.x != 0 || currentAuction.y != 0);
+    require(currentAuction.x != 0 || currentAuction.y != 0, "Invalid plot position.");
     _;
   }
 
   /**
    * @dev Bids on a plot by anyone.
    */
-  function bid(int8 i, int8 j, uint8 team) external payable whenNotPaused canBid {
+  function bid(int8 i, int8 j, uint8 team, uint256 newMaxBid) external payable whenNotPaused canBid {
     uint8 k = plotPositionToIndex(i, j);
     Plot storage plot = currentAuction.plots[k];
-    uint256 newMaxBid = balances[msg.sender].add(msg.value);
-    require(newMaxBid >= plot.currentBid.add(1 finney), "Less than current bid"); // Must larger than current bid by 1 finney
+    require(newMaxBid >= plot.currentBid.add(1 finney), "Mix bit less than current bid."); // Must larger than current bid by 1 finney
+    require(newMaxBid <= msg.value.add(balances[msg.sender]), "Max bid less than available fund.");
+    if (msg.value < newMaxBid) // Take some ethers from balance
+      subBalance(msg.sender, newMaxBid.sub(msg.value));
     if (newMaxBid <= plot.maxBid) { // Failed to outbid current bidding, less than its max bid
-      newMaxBid = newMaxBid.add(1 finney); // Add a finney to the current bid
-      plot.currentBid = newMaxBid; // Increase the current bid
-      emit OutBid(plot.x, plot.y, msg.sender, plot.bidder, plot.team, newMaxBid);
+      addBalance(msg.sender, newMaxBid); // Add the current bid to balance, so the bidder can withdraw/reuse later
+      plot.currentBid = newMaxBid.add(1 finney); // Increase the current bid
+      emit Bid(plot.x, plot.y, msg.sender, plot.bidder, plot.team, newMaxBid.add(1 finney));
     } else {
       uint256 newCurrentBid = plot.maxBid.add(1 finney);
-      emit OutBid(plot.x, plot.y, plot.bidder, msg.sender, team, newCurrentBid);
-      if (plot.bidder != address(0)) { // Add the bid of the old bidder to balance, so he can withdraw/reuse later
-        totalBalances = totalBalances.add(plot.maxBid);
-        balances[plot.bidder] = balances[plot.bidder].add(plot.maxBid);
-      }
+      emit Bid(plot.x, plot.y, plot.bidder, msg.sender, team, newCurrentBid);
+      if (plot.bidder != address(0)) // Add the bid of the old bidder to balance, so he can withdraw/reuse later
+        addBalance(plot.bidder, plot.maxBid);
       emptyMyBalance(); // No more balance
       plot.bidder = msg.sender;
       plot.team = team;
       plot.currentBid = newCurrentBid;
       plot.maxBid = newMaxBid;
-      emit Bid(plot.x, plot.y, plot.bidder, team, newCurrentBid);
     }
+  }
+
+  /**
+   * @dev Subtracts some wei the balance of an address.
+   */
+  function subBalance(address taker, uint weiAmount) internal {
+    require(balances[taker] >= weiAmount, "Not enough balance to subtract.");
+    totalBalance = totalBalance.sub(weiAmount);
+    balances[taker] = balances[taker].sub(weiAmount);
+  }
+
+  /**
+   * @dev Adds some wei to the balance of an address.
+   */
+  function addBalance(address giver, uint weiAmount) internal {
+    totalBalance = totalBalance.add(weiAmount);
+    balances[giver] = balances[giver].add(weiAmount);
   }
 
   /**
    * @dev Gets all contributed bids at all plots of the current auction.
    */
-  function getMyContributedBids() external view returns (int8[] xs, int8[] ys, uint256[] bids) {
+  function getContributedBids(address bidder) external view returns (int8[] xs, int8[] ys, uint256[] bids) {
     xs = new int8[](PLOT_COUNT);
     ys = new int8[](PLOT_COUNT);
     bids = new uint256[](PLOT_COUNT);
     for (uint8 k = 0; k < PLOT_COUNT; k++) {
       Plot storage p = currentAuction.plots[k];
-      if (p.bids[msg.sender] > 0) {
+      if (p.bids[bidder] > 0) {
         xs[k] = p.x;
         ys[k] = p.y;
-        bids[k] = p.bids[msg.sender];
+        bids[k] = p.bids[bidder];
       }
     }
   }
@@ -414,7 +488,7 @@ contract LandPotAuction is Pausable {
    */
   function getMaxBid(int8 i, int8 j) external view returns (uint256) {
     Plot storage plot = currentAuction.plots[plotPositionToIndex(i, j)];
-    require(plot.bidder == msg.sender); // Only bidder can get the max bid
+    require(plot.bidder == msg.sender, "Only current bidder can get the max bid."); // Only bidder can get the max bid
     return plot.maxBid;
   }
   
@@ -422,7 +496,7 @@ contract LandPotAuction is Pausable {
    * @dev Withdraws all remaining outbid balance of sender.
    */
   function withdraw() external {
-    require(balances[msg.sender] > 0);
+    require(balances[msg.sender] > 0, "No balance to withdraw.");
     uint256 weiAmount = balances[msg.sender];
     emptyMyBalance();
     msg.sender.transfer(weiAmount);
@@ -434,17 +508,24 @@ contract LandPotAuction is Pausable {
    */
   function emptyMyBalance() internal {
     if (balances[msg.sender] > 0) { // Skip if no balance, for saving gas
-      totalBalances = totalBalances.sub(balances[msg.sender]);
+      totalBalance = totalBalance.sub(balances[msg.sender]);
       balances[msg.sender] = 0;
     }
   }
   
   /**
+   * @dev Gets the earned ETH while keeping enough for jackpot and outbid balances, owner only.
+   */
+  function getEarning() external view onlyOwner returns (uint256) {
+    return address(this).balance.sub(jackpot).sub(totalBalance);
+  }
+
+  /**
    * @dev Withdraws the earned ETH while keeping enough for jackpot and outbid balances, owner only.
    */
-  function ownerWithdraw() external onlyOwner {
-    require(address(this).balance > jackpot.add(totalBalances));
-    msg.sender.transfer(address(this).balance.sub(jackpot).sub(totalBalances));
+  function withdrawEarning() external onlyOwner {
+    require(address(this).balance > jackpot.add(totalBalance), "Not enough balance to withdraw.");
+    msg.sender.transfer(address(this).balance.sub(jackpot).sub(totalBalance));
   }
 
 }
