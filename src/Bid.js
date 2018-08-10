@@ -4,6 +4,7 @@ import getWeb3 from './utils/getWeb3'
 import makeBlockie from 'ethereum-blockies-base64'
 
 import Square from './Square.js'
+import Navbar from './Navbar.js'
 
 import './css/oswald.css'
 import './css/open-sans.css'
@@ -17,25 +18,6 @@ const DOUBLE_POS = [3, 8, 12, 29, 33, 38];
 const TRIPPLE_POS = [16, 18, 23, 25];
 const POINTS_POS = [0, 6, 35, 41];
 var END_DATE = new Date("Aug 8, 2018 0:0:0");
-
-function Navbar(props) {
-    return (
-        <div>
-            <nav className="topnav">
-                <a href="#">Block 42</a>
-                <div>
-                    <button className="withdraw" onClick={props.Onclick}>Withdraw</button>
-                </div>
-                <div>
-                    <img src='eth.png' alt="Bid Pool:"/> {props.pool} ETH
-                </div>
-                <div>
-                    <img src={props.accountIcon} alt='User' />
-                </div>
-            </nav>
-        </div>
-    );
-}
 
 function TeamScore(props) {
     const className = "team-icon " + props.team;
