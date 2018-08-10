@@ -448,7 +448,7 @@ class Bid extends React.Component {
           console.log('bid sent')
           console.log('Successfully placed bid, please wait for the transaction complete. <br />Transaction Hash: ' + this.getTransactionUrl(txhash.tx))
           this.waitForReceipt(txhash.tx, () => {
-            console.log('Bid successfully process, updating plots...')
+            this.showTopAlert('Bid successfully process, updating plots...')
             // this.updateContractDetail();
           })
         }) 
@@ -528,16 +528,16 @@ class Bid extends React.Component {
         const teamID = this.state.team;
         const bidPrice = parseFloat(this.state.bidPrice);
         if (squareId < 0 || squareId >= this.state.board.squares.length) {
-            this.popupHint("please select a land first.");
+            this.showTopAlert("please select a land first.");
             return;
         }
         if (teamID === '') {
-            this.popupHint("please select a team first.");
+            this.showTopAlert("please select a team first.");
             return;
         }
         const bidSquare = this.state.board.squares[squareId];
         if (isNaN(bidPrice) || bidPrice <= 0) {
-            this.popupHint("Please input a valid bid price.");
+            this.showTopAlert("Please input a valid bid price.");
             return;
         } else {
             if (!bidSquare) {
