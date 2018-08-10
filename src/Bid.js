@@ -455,9 +455,9 @@ class Bid extends React.Component {
         .catch((error) => {
           // console.log("Failed with error: " + error.toString().replace("Error: ", ""))
           if (error.toString().includes("revert"))
-            console.log("Failed bidding: bid lower than the current bid")
+            this.showTopAlert("Failed bidding: bid lower than the current bid", "danger")
           else
-            console.log("Failed with error: " + error.message.replace("Error: ", ""))
+            this.showTopAlert("Failed with error: " + error.message.replace("Error: ", "danger"))
         })
     }
 
@@ -528,16 +528,16 @@ class Bid extends React.Component {
         const teamID = this.state.team;
         const bidPrice = parseFloat(this.state.bidPrice);
         if (squareId < 0 || squareId >= this.state.board.squares.length) {
-            this.showTopAlert("please select a land first.");
+            this.showTopAlert("please select a land first.", "danger");
             return;
         }
         if (teamID === '') {
-            this.showTopAlert("please select a team first.");
+            this.showTopAlert("please select a team first.", "danger");
             return;
         }
         const bidSquare = this.state.board.squares[squareId];
         if (isNaN(bidPrice) || bidPrice <= 0) {
-            this.showTopAlert("Please input a valid bid price.");
+            this.showTopAlert("Please input a valid bid price.", "danger");
             return;
         } else {
             if (!bidSquare) {
