@@ -89,7 +89,8 @@ To use this crowdsale page for your token ICO, change the token and crowdsale co
 
 ## Helper Links
 - [GitHub Page Demo](https://block42world.github.io/landpot-dapp/)
-- [Ethereum Ropsten Faucet](http://faucet.ropsten.be:3001/)
+- [Ethereum Ropsten Faucet 1](https://faucet.metamask.io/)
+- [Ethereum Ropsten Faucet 2](http://faucet.ropsten.be:3001/)
 - [Ethereum Rinkeby Faucet](http://rinkeby-faucet.com)
 - [Ethereum Kovan Faucet](https://gitter.im/kovan-testnet/faucet)
 

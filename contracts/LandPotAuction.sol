@@ -313,13 +313,6 @@ contract LandPotAuction is Pausable {
   }
   
   /**
-   * @dev Gets the outbid balance of sender.
-   */
-  function balanceOfMe() external view returns (uint256) {
-    return balances[msg.sender];
-  }
-  
-  /**
    * @dev Withdraws all remaining outbid balance of sender.
    */
   function withdraw() external {
