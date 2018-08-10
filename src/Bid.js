@@ -5,6 +5,7 @@ import getWeb3 from './utils/getWeb3'
 
 import Square from './Square.js'
 import Navbar from './Navbar.js'
+import TopAlert from './TopAlert.js'
 
 import './css/oswald.css'
 import './css/open-sans.css'
@@ -233,6 +234,8 @@ class Bid extends React.Component {
             accounts: [],
             totalBalance: "",
             balanceOfMe: "",
+            topAlertContent: "",
+            topAlertType: "",
         }
     }
     componentWillMount() {
@@ -347,19 +350,26 @@ class Bid extends React.Component {
             if (!error) {
                 // Hint if I got outbid by others
                 if (result.args.oldBidder.toUpperCase() === this.state.accounts[0].toUpperCase())
-                    console.log("Ops... You are out-bid by " + result.args.bidder + " on (" + result.args.x + "," + result.args.y + ")! Current bid price became " + this.state.web3.utils.fromWei(result.args.currentBid.toString()) + " ETH, bid it back NOW!")
+                    this.showTopAlert("Ops... You are out-bid by " + result.args.bidder + " on (" + result.args.x + "," + result.args.y + ")! Current bid price became " + this.state.web3.utils.fromWei(result.args.currentBid.toString()) + " ETH, bid it back NOW!", "danger")
                 // Hint if I outbid others
                 if (result.args.bidder.toUpperCase() === this.state.accounts[0].toUpperCase()) {
                     if (result.args.oldBidder === "0x0000000000000000000000000000000000000000") // No previous bidder
-                        console.log("You've successfully placed a bid on (" + result.args.x + "," + result.args.y + ")! Current bid price became " + this.state.web3.utils.fromWei(result.args.currentBid.toString()) + " ETH.")
+                        this.showTopAlert("You've successfully placed a bid on (" + result.args.x + "," + result.args.y + ")! Current bid price became " + this.state.web3.utils.fromWei(result.args.currentBid.toString()) + " ETH.")
                     else
-                        console.log("Good job! You out-bid " + result.args.bidder + " on (" + result.args.x + "," + result.args.y + ")! Current bid price became " + this.state.web3.utils.fromWei(result.args.currentBid.toString()) + " ETH.")
+                        this.showTopAlert("Good job! You out-bid " + result.args.bidder + " on (" + result.args.x + "," + result.args.y + ")! Current bid price became " + this.state.web3.utils.fromWei(result.args.currentBid.toString()) + " ETH.")
                 }
                 // Update the whole plots
                 this.updateContractDetail()
             } else {
                 console.log(error)
             }
+        })
+    }
+
+    showTopAlert(context, type) {
+        this.setState({
+            topAlertContent: context,
+            topAlertType: type,
         })
     }
 
@@ -580,6 +590,11 @@ class Bid extends React.Component {
                 <Navbar
                     pool={currentBalance}
                     accountIcon={accountIcon}
+                />
+                <TopAlert
+                    content={this.state.topAlertContent}
+                    type={this.state.topAlertType}
+                    onCloseClick={() => this.showTopAlert()}
                 />
                 <Board
                     selectId={selectedSquareId}
