@@ -129,18 +129,18 @@ class App extends Component {
   handleBid = () => {
     console.log('bid clicked')
     const bidPrice = this.refs.Input.value
-    console.log(bidPrice)
+    console.log("bidding " + bidPrice)
     this.state.landPotAuctionInstance.bid(0, 0, 0, { from: this.state.accounts[0], value: this.state.web3.utils.toWei((bidPrice), 'ether'), gasPrice: 20e9, gas: 130000 })
     .then((txhash) => {
       console.log('bid sent')
       // $('#transaction-status').html('Successfully placed bid, please wait for the transaction complete. <br />Transaction Hash: ' + getTransactionUrl(hash))
       console.log('Successfully placed bid, please wait for the transaction complete. <br />Transaction Hash: ' + this.getTransactionUrl(txhash.tx))
       this.waitForReceipt(txhash.tx, () => {
-        console.log('Transaction successfully proceed, updating UI...')
+        // Transaction went through, UI update can be handled here or in the event.
+        console.log('Transaction successfully proceed, updating UI...') // UI update is handled in the event, we just put a notice here for demo.
       })
     })
     .catch((error) => {
-      // console.log("Failed with error: " + error.toString().replace("Error: ", ""))
       if (error.toString().includes("revert"))
         console.log("Failed bidding: bid lower than the current bid")
       else
