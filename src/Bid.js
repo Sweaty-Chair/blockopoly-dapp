@@ -310,7 +310,6 @@ class Bid extends React.Component {
     updateContractDetail() {
         // Gets plots
         this.state.landPotAuctionInstance.getPlots().then((result) => {
-            console.log(result)
             const newSquares = this.state.board.squares.slice();
             for (let i = 0; i < 42; ++i) {
                 if (result[4][i].toNumber() > 0) {
@@ -321,9 +320,7 @@ class Bid extends React.Component {
             this.setState({
                 board: { squares: newSquares },
             }, () => { this.updateScores() })
-            // console.log(result)
-            // this.setState({ currentBid: this.state.web3.utils.fromWei(result[4].toString()) })
-            // this.setState({ bidder: result[2] })
+            console.log(result)
         })
         this.state.landPotAuctionInstance.getEndingTime().then((result) => {
             const endingDate = new Date(0);
@@ -331,16 +328,16 @@ class Bid extends React.Component {
             END_DATE = endingDate
             console.log(endingDate);
         })
-        // Gets total balance.
-        this.state.landPotAuctionInstance.totalBalance().then((result) => {
-            // console.log(result.toNumber())
-            this.setState({ totalBalance: this.state.web3.utils.fromWei(result.toString()) })
-        })
-        // Gets balance of me.
-        this.state.landPotAuctionInstance.balances(this.state.accounts[0]).then((result) => {
-            // console.log(result.toNumber())
-            this.setState({ balanceOfMe: this.state.web3.utils.fromWei(result.toString()) })
-        })
+        // // Gets total balance.
+        // this.state.landPotAuctionInstance.totalBalance().then((result) => {
+        //     console.log(result.toNumber())
+        //     this.setState({ totalBalance: this.state.web3.utils.fromWei(result.toString()) })
+        // })
+        // // Gets balance of me.
+        // this.state.landPotAuctionInstance.balances(this.state.accounts[0]).then((result) => {
+        //     console.log(result.toNumber())
+        //     this.setState({ balanceOfMe: this.state.web3.utils.fromWei(result.toString()) })
+        // })
     }
 
     watchEvents() {
@@ -358,10 +355,8 @@ class Bid extends React.Component {
                     else
                         console.log("Good job! You out-bid " + result.args.bidder + " on (" + result.args.x + "," + result.args.y + ")! Current bid price became " + this.state.web3.utils.fromWei(result.args.currentBid.toString()) + " ETH.")
                 }
-                // Change the displaying current bidder, bid price, and my balance
-                if (result.args.x.toNumber() === 0 && result.args.y.toNumber() === 0) {
-                    this.updateContractDetail() // Update the current bidder and bid price of (0,0), for demo, update everything for now
-                }
+                // Update the whole plots
+                this.updateContractDetail()
             } else {
                 console.log(error)
             }
@@ -444,7 +439,7 @@ class Bid extends React.Component {
           console.log('Successfully placed bid, please wait for the transaction complete. <br />Transaction Hash: ' + this.getTransactionUrl(txhash.tx))
           this.waitForReceipt(txhash.tx, () => {
             console.log('Bid successfully process, updating plots...')
-            this.updateContractDetail();
+            // this.updateContractDetail();
           })
         }) 
         .catch((error) => {
@@ -561,9 +556,9 @@ class Bid extends React.Component {
         let currentSquarePrice;
         if (currentSquare) {
             currentSquarePrice = currentSquare.bid;
-            if (currentSquare.bidder) {
-                squareBidder = makeBlockie(currentSquare.bidder);
-            }
+            // if (currentSquare.bidder) {
+            //     squareBidder = makeBlockie(currentSquare.bidder);
+            // }
         }
         let currentBalance = this.state.balanceOfMe;
         if (!currentBalance) {
