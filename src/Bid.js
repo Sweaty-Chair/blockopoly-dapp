@@ -569,7 +569,7 @@ class Bid extends React.Component {
             currentBalance = 0;
         }
         
-        let accountIcon = "";
+        let accountIcon = "user.png";
         if (this.state.accounts[0]) {
             accountIcon = makeBlockie(this.state.accounts[0]);
         }
