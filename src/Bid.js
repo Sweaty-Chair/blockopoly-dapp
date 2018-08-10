@@ -1,6 +1,7 @@
 import React from 'react'
 import LandPotAuctionContract from '../build/contracts/LandPotAuction.json'
 import getWeb3 from './utils/getWeb3'
+import makeBlockie from 'ethereum-blockies-base64'
 
 import Square from './Square.js'
 
@@ -26,9 +27,11 @@ function Navbar(props) {
                     <button className="withdraw" onClick={props.Onclick}>Withdraw</button>
                 </div>
                 <div>
-                    <img  src='eth.png' alt="Bid Pool:"/> {props.pool} ETH
+                    <img src='eth.png' alt="Bid Pool:"/> {props.pool} ETH
                 </div>
-
+                <div>
+                    <img src={props.accountIcon} alt='User' />
+                </div>
             </nav>
         </div>
     );
@@ -324,6 +327,7 @@ class Bid extends React.Component {
             const endingDate = new Date(0);
             endingDate.setUTCSeconds(result.toNumber())
             END_DATE = endingDate
+            console.log(endingDate);
         })
         // Gets total balance.
         this.state.landPotAuctionInstance.totalBalance().then((result) => {
@@ -564,10 +568,16 @@ class Bid extends React.Component {
         if (!currentBalance) {
             currentBalance = 0;
         }
+        
+        let accountIcon = "";
+        if (this.state.accounts[0]) {
+            accountIcon = makeBlockie(this.state.accounts[0]);
+        }
         return (
             <div className="body">
                 <Navbar
-                    pool={currentBalance} 
+                    pool={currentBalance}
+                    accountIcon={accountIcon}
                 />
                 <Board
                     selectId={selectedSquareId}
