@@ -46,6 +46,40 @@
     color:#960f0f;
   }
 
+  .close {
+    position: absolute;
+    right: 3px;
+    top: 3px;
+    width: 32px;
+    height: 32px;
+    opacity: 1;
+  }
+  .close:hover {
+    opacity: 0.3;
+  }
+  .close:before, .close:after {
+    position: absolute;
+    left: 15px;
+    content: ' ';
+    height: 15px;
+    width: 2px;
+    background-color: #333;
+  }
+  .close:before {
+    transform: rotate(45deg);
+  }
+  .close:after {
+    transform: rotate(-45deg);
+  }
+
+  .bgcolor-success {
+    background-color: #00C851;
+  }
+
+  .bgcolor-danger {
+    background-color: #ff4444;
+  }
+
   .current-bid-text {
     color: #960f0f;
     margin-left: 10px;
@@ -181,6 +215,25 @@
   text-align:center;
   text-decoration:none;
   padding:14px 16px;
+  }
+
+  .top-alert {
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 100%;
+  }
+
+  .top-alert p {
+    color: black;
+    margin: 18px;
+    line-height: 1.2
+  }
+
+  .top-alert a {
+    display: block;
+    float: right;
   }
 
   .topnav div {
