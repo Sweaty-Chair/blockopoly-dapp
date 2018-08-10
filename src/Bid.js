@@ -20,16 +20,22 @@ const POINTS_POS = [0, 6, 35, 41];
 var END_DATE = new Date("Aug 8, 2018 0:0:0");
 
 function TeamScore(props) {
-    const className = "team-icon " + props.team;
+    const team = props.team;
     const score = props.score;
-    const teamTag = props.team.split("-")[1];
+    const teamTag = props.teamTag;
+    const selectTeam = props.selectTeam;
+
     let divClass = "team-score";
-    if (props.selectTeam === props.team) {
+    let iconClass = "team-icon";
+    // set selected or not
+    if (selectTeam === team) {
         divClass += " square-select";
     }
+    // set team-icon class
+    iconClass += " team-" + teamTag;
     return (
-        <div className={divClass}>
-            <div className={className} onClick={props.onClick}>{teamTag}</div>
+        <div className={divClass} onClick={props.onClick}>
+            <div className={iconClass}>{teamTag}</div>
             <p className="team-score-text">Score: {score}</p>
         </div>
     );
@@ -133,6 +139,34 @@ class Board extends React.Component {
     }
 }
 
+class TeamScoreTable extends React.Component {
+    render () {
+        let rows = [];
+        for (let i = 0; i < this.props.teams.length; ++i) {
+            const element = this.props.teams[i];
+            rows.push(
+                <TeamScore 
+                    key={element.team}
+                    team={element.team}
+                    score={element.score}
+                    teamTag={element.teamTag}
+                    selectTeam={this.props.selectTeam}
+                    onClick={() => this.props.onSelectTeam(element.team)}
+                />
+            );
+        }
+        return (
+            <div className="dark">
+                <div className="bid-table">
+                    <div>
+                        {rows}
+                    </div>
+                </div>
+            </div>
+        );
+    }
+}
+
 class Info extends React.Component {
     constructor(props) {
         super(props);
@@ -147,26 +181,8 @@ class Info extends React.Component {
         const row = parseInt(this.props.selectId / BOARD_COLUMNS + 1, 10);
         const column = parseInt(this.props.selectId % BOARD_COLUMNS + 1, 10);
         const bidPrice = this.props.bidPrice;
-        const teams = this.props.teams;
-        const scores = this.props.scores;
-        const selectTeam = this.props.selectTeam;
         const currentSquarePrice = this.props.currentSquarePrice;
-        let teamScores = [];
         let currentSquareInfo;
-        for (let i = 0; i < teams.length; ++i) {
-            let score = 0;
-            if (scores && scores.length > i) {
-                score = scores[i];
-            }
-            teamScores.push(
-            <TeamScore 
-                key={teams[i]} 
-                team={teams[i]} 
-                score={score} 
-                selectTeam={selectTeam}
-                onClick={() => this.props.onSelectTeam(teams[i])}
-            />)
-        }
         if (currentSquarePrice) {
             currentSquareInfo = "(Current Bid: " + currentSquarePrice + ")";
         }
@@ -183,9 +199,6 @@ class Info extends React.Component {
                         </input>
                         <button className="bid-button" onClick={this.props.onClick}>Bid</button>
                         <span className="current-bid-text">{currentSquareInfo}</span>
-                    </div>
-                    <div>
-                        {teamScores}
                     </div>
                 </div>
             </div>
@@ -555,6 +568,12 @@ class Bid extends React.Component {
         if (this.state.accounts[0]) {
             accountIcon = makeBlockie(this.state.accounts[0]);
         }
+        let scoreTable = [];
+        for (let i = 0; i < teams.length; ++i) {
+            let teamTag = teams[i].split("-")[1];
+            let row = { team: teams[i], teamTag: teamTag, score: scores[i] }
+            scoreTable.push(row);
+        }
         return (
             <div className="body">
                 <Navbar
@@ -577,6 +596,11 @@ class Bid extends React.Component {
                     onSelectTeam={(teamId) => this.selectTeam(teamId)}
                     currentSquarePrice={currentSquarePrice}
                     scores={scores}
+                />
+                <TeamScoreTable 
+                    teams={scoreTable}
+                    selectTeam={this.state.team}
+                    onSelectTeam={(team) => this.selectTeam(team)}
                 />
             </div>
         );

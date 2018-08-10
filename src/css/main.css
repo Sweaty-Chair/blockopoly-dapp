@@ -131,15 +131,15 @@
   .team-score {
     height: 34px;
     margin-top: 15px;
-    width: 25%;
-    display: inline-block;
+    display: block;
+    margin-top: 15px;
   }
 
   .team-score-text {
     display: inline-block;
     line-height: 100%;
     color: white;
-    margin-right: 15px;
+    margin-left: 15px;
     vertical-align: middle;
   }
 
