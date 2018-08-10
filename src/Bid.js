@@ -218,6 +218,7 @@ class Bid extends React.Component {
         this.bidCountdown = this.bidCountdown.bind(this);
         this.updateScores = this.updateScores.bind(this);
         this.checkAccounts = this.checkAccounts.bind(this);
+        this.updateContractDetail = this.updateContractDetail.bind(this);
         this.state = {
             web3: null,
             teams: ["team-A", "team-B", "team-C", "team-D"],
@@ -442,12 +443,7 @@ class Bid extends React.Component {
           console.log('Successfully placed bid, please wait for the transaction complete. <br />Transaction Hash: ' + this.getTransactionUrl(txhash.tx))
           this.waitForReceipt(txhash.tx, () => {
             console.log('Bid successfully process, updating plots...')
-            const newSquares = this.state.board.squares.slice();
-            newSquares[squareId] = {team: bidTeam, bid: bidPrice, bidder: this.state.accounts[0]};
-            this.setState({
-                board: {squares: newSquares},
-            });
-            this.updateScores();
+            this.updateContractDetail();
           })
         }) 
         .catch((error) => {
