@@ -1,7 +1,7 @@
 import React from 'react'
 import LandPotAuctionContract from '../build/contracts/LandPotAuction.json'
 import getWeb3 from './utils/getWeb3'
-import makeBlockie from 'ethereum-blockies-base64'
+// import makeBlockie from 'ethereum-blockies-base64'
 
 import Square from './Square.js'
 import Navbar from './Navbar.js'
@@ -304,6 +304,7 @@ class Bid extends React.Component {
     updateContractDetail() {
         // Gets plots
         this.state.landPotAuctionInstance.getPlots().then((result) => {
+            console.log(result)
             const newSquares = this.state.board.squares.slice();
             for (let i = 0; i < 42; ++i) {
                 if (result[4][i].toNumber() > 0) {
@@ -431,7 +432,7 @@ class Bid extends React.Component {
             console.log("Bid failed, invalid bidTeam: {" + bidTeam + "}");
         }
 
-        this.state.landPotAuctionInstance.bid(squareChainIndex.row, squareChainIndex.column, teamId, { from: this.state.accounts[0], value: this.state.web3.utils.toWei((bidPrice.toString()), 'ether'), gasPrice: 20e9, gas: 130000 })
+        this.state.landPotAuctionInstance.bid(squareChainIndex.row, squareChainIndex.column, teamId, this.state.web3.utils.toWei((bidPrice.toString()), 'ether'), { from: this.state.accounts[0], value: this.state.web3.utils.toWei((bidPrice.toString()), 'ether'), gasPrice: 20e9, gas: 130000 })
         .then((txhash) => {
           console.log('bid sent')
           console.log('Successfully placed bid, please wait for the transaction complete. <br />Transaction Hash: ' + this.getTransactionUrl(txhash.tx))
@@ -565,9 +566,9 @@ class Bid extends React.Component {
         }
         
         let accountIcon = "user.png";
-        if (this.state.accounts[0]) {
-            accountIcon = makeBlockie(this.state.accounts[0]);
-        }
+        // if (this.state.accounts[0]) {
+        //     accountIcon = makeBlockie(this.state.accounts[0]);
+        // }
         let scoreTable = [];
         for (let i = 0; i < teams.length; ++i) {
             let teamTag = teams[i].split("-")[1];
