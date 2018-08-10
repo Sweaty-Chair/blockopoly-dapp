@@ -186,6 +186,10 @@ class Info extends React.Component {
         if (currentSquarePrice) {
             currentSquareInfo = "(Current Bid: " + currentSquarePrice + ")";
         }
+        let bidderIconClassName = "bidder-icon";
+        if (!this.props.bidderIcon) {
+            bidderIconClassName += " hidden";
+        }
         return (
             <div className="dark">
                 <div className="bid-table">
@@ -199,6 +203,7 @@ class Info extends React.Component {
                         </input>
                         <button className="bid-button" onClick={this.props.onClick}>Bid</button>
                         <span className="current-bid-text">{currentSquareInfo}</span>
+                        <img className={bidderIconClassName} src={this.props.bidderIcon} alt='User' />
                     </div>
                 </div>
             </div>
@@ -308,7 +313,7 @@ class Bid extends React.Component {
             for (let i = 0; i < 42; ++i) {
                 if (result[4][i].toNumber() > 0) {
                     console.log("square[" + i + "]: bid:" + result[4][i]);
-                    newSquares[i] = { team: this.state.teams[result[3][i].toNumber()], bid: this.state.web3.utils.fromWei(result[4][i].toString()) }
+                    newSquares[i] = { team: this.state.teams[result[3][i].toNumber()], bid: this.state.web3.utils.fromWei(result[4][i].toString()), bidder: result[2][i] }
                 }
             }
             this.setState({
@@ -438,7 +443,7 @@ class Bid extends React.Component {
           this.waitForReceipt(txhash.tx, () => {
             console.log('Bid successfully process, updating plots...')
             const newSquares = this.state.board.squares.slice();
-            newSquares[squareId] = {team: bidTeam, bid: bidPrice};
+            newSquares[squareId] = {team: bidTeam, bid: bidPrice, bidder: this.state.accounts[0]};
             this.setState({
                 board: {squares: newSquares},
             });
@@ -555,9 +560,13 @@ class Bid extends React.Component {
         const scores = this.state.scores;
         const squares = this.state.board.squares;
         const currentSquare = squares[selectedSquareId];
+        let squareBidder = "";
         let currentSquarePrice;
         if (currentSquare) {
             currentSquarePrice = currentSquare.bid;
+            if (currentSquare.bidder) {
+                squareBidder = makeBlockie(currentSquare.bidder);
+            }
         }
         let currentBalance = this.state.balanceOfMe;
         if (!currentBalance) {
@@ -596,6 +605,7 @@ class Bid extends React.Component {
                     onSelectTeam={(teamId) => this.selectTeam(teamId)}
                     currentSquarePrice={currentSquarePrice}
                     scores={scores}
+                    bidderIcon={squareBidder}
                 />
                 <TeamScoreTable 
                     teams={scoreTable}
