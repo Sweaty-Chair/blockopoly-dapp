@@ -23,8 +23,8 @@ contract LandPotAuction is Pausable {
 
   // Represents a plot bidding in an auction
   struct Plot {
-    int8 x;
-    int8 y;
+    uint8 x;
+    uint8 y;
     address bidder;
     uint8 team;
     uint256 currentBid;
@@ -37,12 +37,12 @@ contract LandPotAuction is Pausable {
     uint8 othersPortion;
   }
 
-  event Bid(int8 x, int8 y, address indexed oldBidder, address indexed bidder, uint8 team, uint256 currentBid);
+  event Bid(uint8 x, uint8 y, address indexed oldBidder, address indexed bidder, uint8 team, uint256 currentBid);
   event Withdrawn(address indexed payee, uint256 weiAmount);
 
   uint8 constant PLOT_WIDTH = 7; // 7x6 plots
+  uint8 constant PLOT_HEIGHT = 6;
   uint8 constant PLOT_COUNT = 42; // Cache for better performance and less gas. 7x6 plots = 42
-  int8 constant PLOT_WIDTH_HALF = 3; // Cache for better performance and less gas. 7 /2 = 3
 
   // The current world of all selling lands, this is only change after the final free-trade period
   uint32 public currentWorldId;
@@ -84,21 +84,22 @@ contract LandPotAuction is Pausable {
   /**
    * @dev Starts a new auction for a new land, contract owner only.
    */
-  function startAuction(int64 x, int64 y) public onlyOwner {
+  function startAuction(int64 _x, int64 _y) public onlyOwner {
     require(currentAuction.endingTime < now, "Current auction not yet ended.");
-    archiveCurrentAuction();
-    currentAuction.x = x;
-    currentAuction.y = y;
+    if (currentAuction.x != 0 || currentAuction.y != 0) // Archiving the currect auction
+      pastAuctions[currentWorldId].push(currentAuction);
+    currentAuction.x = _x;
+    currentAuction.y = _y;
     currentAuction.endingTime = uint64((now - now % 86400) + 1 weeks);
     bool push = false;
     if (currentAuction.plots.length == 0)
       push = true;
     for (uint8 k = 0; k < PLOT_COUNT; k++) {
-      (int8 i, int8 j) = plotIndexToPosition(k);
+      (uint8 x, uint8 y) = plotIndexToPosition(k);
       if (push)
-        currentAuction.plots.push(Plot(i, j, address(0), 0, 0, 0)); // Creates new struct and adds it in storage
+        currentAuction.plots.push(Plot(x, y, address(0), 0, 0, 0)); // Creates new struct and adds it in storage
       else
-        currentAuction.plots[k] = Plot(i, j, address(0), 0, 0, 0); // Creates new struct and updates it in storage
+        currentAuction.plots[k] = Plot(x, y, address(0), 0, 0, 0); // Updates the new struct and updates it in storage
     }
   }
 
@@ -129,7 +130,7 @@ contract LandPotAuction is Pausable {
     for (uint8 k = 0; k < PLOT_COUNT; k++) {
       Plot storage plot = currentAuction.plots[k];
       totalBid = totalBid.add(plot.currentBid);
-      if (plot.team == team && plot.bidder != winner) { // Gives back the
+      if (plot.team == team && plot.bidder != winner) { // Keeps track of all other winnders
         otherWinners[k] = plot.bidder;
         totalOtherWinners++;
       }
@@ -139,21 +140,10 @@ contract LandPotAuction is Pausable {
     // Reward winner and others
     balances[winner] = balances[winner].add(totalBid.mul(teams_[team].winnerPortion).div(100));
     uint256 otherReward = totalBid.mul(teams_[team].othersPortion).div(100).div(totalOtherWinners);
-    for (k = 0; k < PLOT_COUNT; k++) {
-      if (otherWinners[k] != address(0))
-        balances[otherWinners[k]] = balances[otherWinners[k]].add(otherReward);
-    }
+    for (k = 0; k < totalOtherWinners; k++)
+      balances[otherWinners[k]] = balances[otherWinners[k]].add(otherReward);
     bidLandContract_.createAndTransfer(winner, currentWorldId, currentAuction.x, currentAuction.y);
     bidLandContract_.setBidPrice(currentWorldId, currentAuction.x, currentAuction.y, totalBid);
-  }
-
-  /**
-   * @dev Internal function for archiving the currect auction.
-   */
-  function archiveCurrentAuction() internal {
-    if (currentAuction.x != 0 || currentAuction.y != 0)
-      pastAuctions[currentWorldId].push(currentAuction);
-    // TODO: copy struct
   }
 
   /**
@@ -169,16 +159,18 @@ contract LandPotAuction is Pausable {
   /**
    * @dev Maps a 2D plot position to a 1D array index. (-3,-3)->(3,3) to 0->49
    */
-  function plotPositionToIndex(int8 i, int8 j) public pure returns (uint8) {
-    return uint8((i + PLOT_WIDTH_HALF) * int8(PLOT_WIDTH) + j + PLOT_WIDTH_HALF);
+  function plotPositionToIndex(uint8 _x, uint8 _y) public pure returns (uint8) {
+    require(_x > 0 && _x <= PLOT_WIDTH, "Invalid x.");
+    require(_y > 0 && _y <= PLOT_HEIGHT, "Invalid y.");
+    return (_x - 1) * PLOT_WIDTH + _y - 1;
   }
 
   /**
    * @dev Converts a a 1D plot array index to 2D position. 0->49 to (-3,-3)->(3,3)
    */
-  function plotIndexToPosition(uint8 k) public pure returns (int8 i, int8 j) {
-    i = int8(k) / int8(PLOT_WIDTH) - PLOT_WIDTH_HALF;
-    j = int8(k) % int8(PLOT_WIDTH) - PLOT_WIDTH_HALF;
+  function plotIndexToPosition(uint8 _index) public pure returns (uint8, uint8) {
+    require(_index >= 0 && _index <= PLOT_COUNT, "Invalid index.");
+    return (_index / PLOT_WIDTH + 1, _index % PLOT_WIDTH + 1);
   }
   
   /**
@@ -198,21 +190,21 @@ contract LandPotAuction is Pausable {
   /**
    * @dev Gets a specific plot in current auction.
    */
-  function getPlot(int8 i, int8 j) external view returns (int8 x, int8 y, address bidder, uint8 team, uint256 currentBid) {
-    return getPlotByIndex(plotPositionToIndex(i, j));
+  function getPlot(uint8 _x, uint8 _y) external view returns (uint8 x, uint8 y, address bidder, uint8 team, uint256 currentBid) {
+    return getPlotByIndex(plotPositionToIndex(_x, _y));
   }
 
-  function getPlotByIndex(uint8 k) public view returns (int8 x, int8 y, address bidder, uint8 team, uint256 currentBid) {
-    Plot storage plot = currentAuction.plots[k];
+  function getPlotByIndex(uint8 _index) public view returns (uint8 x, uint8 y, address bidder, uint8 team, uint256 currentBid) {
+    Plot storage plot = currentAuction.plots[_index];
     return(plot.x, plot.y, plot.bidder, plot.team, plot.currentBid);
   }
 
   /**
    * @dev Gets all plots in current auction.
    */
-  function getPlots() external view returns (int8[] xs, int8[] ys, address[] bidders, uint8[] teams, uint256[] currentBids) {
-    xs = new int8[](PLOT_COUNT);
-    ys = new int8[](PLOT_COUNT);
+  function getPlots() external view returns (uint8[] xs, uint8[] ys, address[] bidders, uint8[] teams, uint256[] currentBids) {
+    xs = new uint8[](PLOT_COUNT);
+    ys = new uint8[](PLOT_COUNT);
     bidders = new address[](PLOT_COUNT);
     teams = new uint8[](PLOT_COUNT);
     currentBids = new uint256[](PLOT_COUNT);
@@ -245,60 +237,60 @@ contract LandPotAuction is Pausable {
   /**
    * @dev Bids on a plot by anyone.
    */
-  function bid(int8 i, int8 j, uint8 team, uint256 newMaxBid) external payable whenNotPaused canBid {
-    uint8 k = plotPositionToIndex(i, j);
-    Plot storage plot = currentAuction.plots[k];
-    require(newMaxBid >= plot.currentBid.add(1 finney), "Mix bit less than current bid."); // Must larger than current bid by 1 finney
-    require(newMaxBid <= msg.value.add(balances[msg.sender]), "Max bid less than available fund.");
-    if (msg.value < newMaxBid) // Take some ethers from balance
-      subBalance(msg.sender, newMaxBid.sub(msg.value));
-    if (newMaxBid <= plot.maxBid) { // Failed to outbid current bidding, less than its max bid
-      addBalance(msg.sender, newMaxBid); // Add the current bid to balance, so the bidder can withdraw/reuse later
-      plot.currentBid = newMaxBid.add(1 finney); // Increase the current bid
-      emit Bid(plot.x, plot.y, msg.sender, plot.bidder, plot.team, newMaxBid.add(1 finney));
+  function bid(uint8 _x, uint8 _y, uint8 _team, uint256 _newMaxBid) external payable whenNotPaused canBid {
+    uint8 index = plotPositionToIndex(_x, _y);
+    Plot storage plot = currentAuction.plots[index];
+    require(_newMaxBid >= plot.currentBid.add(1 finney), "Mix bit less than current bid."); // Must larger than current bid by 1 finney
+    require(_newMaxBid <= msg.value.add(balances[msg.sender]), "Max bid less than available fund.");
+    if (msg.value < _newMaxBid) // Take some ethers from balance
+      subBalance(msg.sender, _newMaxBid.sub(msg.value));
+    if (_newMaxBid <= plot.maxBid) { // Failed to outbid current bidding, less than its max bid
+      addBalance(msg.sender, _newMaxBid); // Add the current bid to balance, so the bidder can withdraw/reuse later
+      plot.currentBid = _newMaxBid.add(1 finney); // Increase the current bid
+      emit Bid(plot.x, plot.y, msg.sender, plot.bidder, plot.team, _newMaxBid.add(1 finney));
     } else {
       uint256 newCurrentBid = plot.maxBid.add(1 finney);
-      emit Bid(plot.x, plot.y, plot.bidder, msg.sender, team, newCurrentBid);
+      emit Bid(plot.x, plot.y, plot.bidder, msg.sender, _team, newCurrentBid);
       if (plot.bidder != address(0)) // Add the bid of the old bidder to balance, so he can withdraw/reuse later
         addBalance(plot.bidder, plot.maxBid);
       emptyMyBalance(); // No more balance
       plot.bidder = msg.sender;
-      plot.team = team;
+      plot.team = _team;
       plot.currentBid = newCurrentBid;
-      plot.maxBid = newMaxBid;
+      plot.maxBid = _newMaxBid;
     }
   }
 
   /**
    * @dev Subtracts some wei the balance of an address.
    */
-  function subBalance(address taker, uint weiAmount) internal {
-    require(balances[taker] >= weiAmount, "Not enough balance to subtract.");
-    totalBalance = totalBalance.sub(weiAmount);
-    balances[taker] = balances[taker].sub(weiAmount);
+  function subBalance(address _taker, uint _weiAmount) internal {
+    require(balances[_taker] >= _weiAmount, "Not enough balance to subtract.");
+    totalBalance = totalBalance.sub(_weiAmount);
+    balances[_taker] = balances[_taker].sub(_weiAmount);
   }
 
   /**
    * @dev Adds some wei to the balance of an address.
    */
-  function addBalance(address giver, uint weiAmount) internal {
-    totalBalance = totalBalance.add(weiAmount);
-    balances[giver] = balances[giver].add(weiAmount);
+  function addBalance(address _giver, uint _weiAmount) internal {
+    totalBalance = totalBalance.add(_weiAmount);
+    balances[_giver] = balances[_giver].add(_weiAmount);
   }
 
   /**
    * @dev Gets all contributed bids at all plots of the current auction.
    */
-  function getContributedBids(address bidder) external view returns (int8[] xs, int8[] ys, uint256[] bids) {
-    xs = new int8[](PLOT_COUNT);
-    ys = new int8[](PLOT_COUNT);
+  function getContributedBids(address _bidder) external view returns (uint8[] xs, uint8[] ys, uint256[] bids) {
+    xs = new uint8[](PLOT_COUNT);
+    ys = new uint8[](PLOT_COUNT);
     bids = new uint256[](PLOT_COUNT);
     for (uint8 k = 0; k < PLOT_COUNT; k++) {
       Plot storage p = currentAuction.plots[k];
-      if (p.bids[bidder] > 0) {
+      if (p.bids[_bidder] > 0) {
         xs[k] = p.x;
         ys[k] = p.y;
-        bids[k] = p.bids[bidder];
+        bids[k] = p.bids[_bidder];
       }
     }
   }
@@ -306,8 +298,8 @@ contract LandPotAuction is Pausable {
   /**
    * @dev Gets the max bid of sender at specfic plot.
    */
-  function getMaxBid(int8 i, int8 j) external view returns (uint256) {
-    Plot storage plot = currentAuction.plots[plotPositionToIndex(i, j)];
+  function getMaxBid(uint8 _x, uint8 _y) external view returns (uint256) {
+    Plot storage plot = currentAuction.plots[plotPositionToIndex(_x, _y)];
     require(plot.bidder == msg.sender, "Only current bidder can get the max bid."); // Only bidder can get the max bid
     return plot.maxBid;
   }
@@ -346,6 +338,13 @@ contract LandPotAuction is Pausable {
   function withdrawEarning() external onlyOwner {
     require(address(this).balance > jackpot.add(totalBalance), "Not enough balance to withdraw.");
     msg.sender.transfer(address(this).balance.sub(jackpot).sub(totalBalance));
+  }
+
+  /**
+   * @dev Withdraws the all ETH, owner only, for testing ONLY.
+   */
+  function withdrawAll() external onlyOwner {
+    msg.sender.transfer(address(this).balance);
   }
 
 }

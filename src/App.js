@@ -130,7 +130,7 @@ class App extends Component {
     console.log('bid clicked')
     const bidPrice = this.refs.Input.value
     console.log("bidding " + bidPrice)
-    this.state.landPotAuctionInstance.bid(0, 0, 0, { from: this.state.accounts[0], value: this.state.web3.utils.toWei((bidPrice), 'ether'), gasPrice: 20e9, gas: 130000 })
+    this.state.landPotAuctionInstance.bid(1, 1, 0, { from: this.state.accounts[0], value: this.state.web3.utils.toWei((bidPrice), 'ether'), gasPrice: 20e9, gas: 130000 })
     .then((txhash) => {
       console.log('bid sent')
       // $('#transaction-status').html('Successfully placed bid, please wait for the transaction complete. <br />Transaction Hash: ' + getTransactionUrl(hash))

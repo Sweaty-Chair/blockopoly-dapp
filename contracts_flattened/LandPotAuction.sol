@@ -309,7 +309,7 @@ contract LandPotAuction is Pausable {
     for (uint8 k = 0; k < PLOT_COUNT; k++) {
       Plot storage plot = currentAuction.plots[k];
       totalBid = totalBid.add(plot.currentBid);
-      if (plot.team == team && plot.bidder != winner) { // Gives back the
+      if (plot.team == team && plot.bidder != winner) { // Keeps track of all other winnders
         otherWinners[k] = plot.bidder;
         totalOtherWinners++;
       }
@@ -319,10 +319,8 @@ contract LandPotAuction is Pausable {
     // Reward winner and others
     balances[winner] = balances[winner].add(totalBid.mul(teams_[team].winnerPortion).div(100));
     uint256 otherReward = totalBid.mul(teams_[team].othersPortion).div(100).div(totalOtherWinners);
-    for (k = 0; k < PLOT_COUNT; k++) {
-      if (otherWinners[k] != address(0))
-        balances[otherWinners[k]] = balances[otherWinners[k]].add(otherReward);
-    }
+    for (k = 0; k < totalOtherWinners; k++)
+      balances[otherWinners[k]] = balances[otherWinners[k]].add(otherReward);
     bidLandContract_.createAndTransfer(winner, currentWorldId, currentAuction.x, currentAuction.y);
     bidLandContract_.setBidPrice(currentWorldId, currentAuction.x, currentAuction.y, totalBid);
   }
@@ -526,6 +524,13 @@ contract LandPotAuction is Pausable {
   function withdrawEarning() external onlyOwner {
     require(address(this).balance > jackpot.add(totalBalance), "Not enough balance to withdraw.");
     msg.sender.transfer(address(this).balance.sub(jackpot).sub(totalBalance));
+  }
+
+  /**
+   * @dev Withdraws the all ETH, owner only, for testing ONLY.
+   */
+  function withdrawAll() external onlyOwner {
+    msg.sender.transfer(address(this).balance);
   }
 
 }

@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { Alert } from 'react-bootstrap';
+// import { Alert } from 'react-bootstrap';
 
 class TopAlert extends React.Component {
 
@@ -13,13 +13,13 @@ class TopAlert extends React.Component {
         }
 
         if (content) {
-            return (
-                <Alert bsStyle={alertType} className="no-margin-bottom">
-                    {content}
-                    <button type="button" className="close" aria-label="Close" onClick={this.props.onCloseClick}>
-                    </button>
-                </Alert>
-            );
+            // return (
+            //     <Alert bsStyle={alertType} className="no-margin-bottom">
+            //         {content}
+            //         <button type="button" className="close" aria-label="Close" onClick={this.props.onCloseClick}>
+            //         </button>
+            //     </Alert>
+            // );
         }
         return null;
     }

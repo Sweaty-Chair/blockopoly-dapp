@@ -9,9 +9,9 @@ module.exports = {
       network_id: "*", // Match any network id
     },
     richard: {
-      host: "192.168.1.77",
+      host: "192.168.100.177",
       port: 7545, // Ganache
-      network_id: 5778, // Match any network id
+      network_id: "*", // Match any network id
     },
     ropsten: {
       provider: () => new HDWalletProvider(process.env.MNENOMIC, "https://ropsten.infura.io/v3/" + process.env.INFURA_API_KEY),

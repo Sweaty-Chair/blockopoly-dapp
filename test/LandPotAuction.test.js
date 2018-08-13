@@ -1,6 +1,4 @@
 const { inLogs } = require('openzeppelin-solidity/test/helpers/expectEvent');
-// const { expectThrow } = require('openzeppelin-solidity/test/helpers/expectThrow');
-// const { EVMRevert } = require('openzeppelin-solidity/test/helpers/EVMRevert');
 const { assertRevert } = require('openzeppelin-solidity/test/helpers/assertRevert')
 const { ether } = require('openzeppelin-solidity/test/helpers/ether')
 
@@ -25,26 +23,38 @@ contract('LandPotAuction', (accounts) => {
   })
 
   // describe('plotPositionToIndex', () => {
-  //   it('(-3,-3)', async () => {
-  //     const index = await this.landPotAuction.plotPositionToIndex.call(-3, -3)
+  //   it('(1,1)', async () => {
+  //     const index = await this.landPotAuction.plotPositionToIndex.call(1, 1)
   //     index.toNumber().should.be.equal(0)
   //   })
-  //   it('(0,0)', async () => {
-  //     const index = await this.landPotAuction.plotPositionToIndex.call(0, 0)
-  //     index.toNumber().should.be.equal(24)
+  //   it('(2,3)', async () => {
+  //     const index = await this.landPotAuction.plotPositionToIndex.call(2, 3)
+  //     index.toNumber().should.be.equal(9)
+  //   })
+  //   it('(0,0) reverted', async () => {
+  //     await assertRevert(this.landPotAuction.plotPositionToIndex.call(0, 0))
+  //   })
+  //   it('(8,7) reverted', async () => {
+  //     await assertRevert(this.landPotAuction.plotPositionToIndex.call(8, 7))
   //   })
   // })
 
   // describe('plotIndexToPosition', () => {
   //   it('0', async () => {
   //     const data = await this.landPotAuction.plotIndexToPosition.call(0)
-  //     data[0].toNumber().should.be.equal(-3)
-  //     data[1].toNumber().should.be.equal(-3)
+  //     data[0].toNumber().should.be.equal(1)
+  //     data[1].toNumber().should.be.equal(1)
   //   })
-  //   it('24', async () => {
-  //     const data = await this.landPotAuction.plotIndexToPosition.call(24)
-  //     data[0].toNumber().should.be.equal(0)
-  //     data[1].toNumber().should.be.equal(0)
+  //   it('9', async () => {
+  //     const data = await this.landPotAuction.plotIndexToPosition.call(9)
+  //     data[0].toNumber().should.be.equal(2)
+  //     data[1].toNumber().should.be.equal(3)
+  //   })
+  //   it('-10 reverted', async () => {
+  //     await assertRevert(this.landPotAuction.plotIndexToPosition.call(-10))
+  //   })
+  //   it('43 reverted', async () => {
+  //     await assertRevert(this.landPotAuction.plotIndexToPosition.call(43))
   //   })
   // })
 
@@ -56,9 +66,9 @@ contract('LandPotAuction', (accounts) => {
 
   // describe('startAuction', () => {
   //   it('has created empty plots', async () => {
-  //     const data = await this.landPotAuction.getPlot.call(0, 0)
-  //     data[0].toNumber().should.be.equal(0) // x
-  //     data[1].toNumber().should.be.equal(0) // y
+  //     const data = await this.landPotAuction.getPlot.call(1, 1)
+  //     data[0].toNumber().should.be.equal(1) // x
+  //     data[1].toNumber().should.be.equal(1) // y
   //     data[2].toString().should.be.equal("0x0000000000000000000000000000000000000000") // bidder
   //     data[3].toNumber().should.be.equal(0) // team
   //     data[4].toNumber().should.be.equal(0) // current bid
@@ -82,21 +92,21 @@ contract('LandPotAuction', (accounts) => {
     const finney = ether(0.001)
 
     beforeEach(async () => {
-      const { logs } = await this.landPotAuction.bid(0, 0, team1, bid1, { from: bidder1, value: bid1 });
+      const { logs } = await this.landPotAuction.bid(1, 1, team1, bid1, { from: bidder1, value: bid1 });
       this.logs = logs
     })
 
     describe('succeed bid on empty plot', () => {
       it('current bidder and bid changed', async () => {
-        const data = await this.landPotAuction.getPlot.call(0, 0)
+        const data = await this.landPotAuction.getPlot.call(1, 1)
         data[2].should.eq(bidder1)
         data[3].should.be.bignumber.equal(team1)
         data[4].should.be.bignumber.equal(finney) // first bit is always 1 finney
       })
       it('emitted Bid event', async () => {
         const event = await inLogs(this.logs, 'Bid')
-        event.args.x.should.be.bignumber.equal(0)
-        event.args.y.should.be.bignumber.equal(0)
+        event.args.x.should.be.bignumber.equal(1)
+        event.args.y.should.be.bignumber.equal(1)
         event.args.bidder.should.eq(bidder1)
         event.args.team.should.be.bignumber.equal(team1)
         event.args.currentBid.should.be.bignumber.equal(finney) // first bit is always 1 finney
@@ -105,19 +115,19 @@ contract('LandPotAuction', (accounts) => {
 
     describe('failed bid with less than max bid', () => {
       beforeEach(async () => {
-        const { logs } = await this.landPotAuction.bid(0, 0, team2, bid2failed, { from: bidder2, value: bid2failed });
+        const { logs } = await this.landPotAuction.bid(1, 1, team2, bid2failed, { from: bidder2, value: bid2failed });
         this.logs = logs
       })
       it('current bidder didnt changed but current bid changed', async () => {
-        const data = await this.landPotAuction.getPlot.call(0, 0)
+        const data = await this.landPotAuction.getPlot.call(1, 1)
         data[2].should.eq(bidder1)
         data[3].should.be.bignumber.equal(team1)
         data[4].should.be.bignumber.equal(ether(0.201)) // current bid should be bid price + 1 finney
       })
       it('emitted Bid event', async () => {
         const event = await inLogs(this.logs, 'Bid')
-        event.args.x.should.be.bignumber.equal(0)
-        event.args.y.should.be.bignumber.equal(0)
+        event.args.x.should.be.bignumber.equal(1)
+        event.args.y.should.be.bignumber.equal(1)
         event.args.oldBidder.should.eq(bidder2)
         event.args.bidder.should.eq(bidder1)
         event.args.team.should.be.bignumber.equal(team1)
@@ -135,19 +145,19 @@ contract('LandPotAuction', (accounts) => {
 
     describe('succeed bid with higher than max bid', () => {
       beforeEach(async () => {
-        const { logs } = await this.landPotAuction.bid(0, 0, team2, bid2success, { from: bidder2, value: bid2success });
+        const { logs } = await this.landPotAuction.bid(1, 1, team2, bid2success, { from: bidder2, value: bid2success });
         this.logs = logs
       })
       it('current bidder and bid changed', async () => {
-        const data = await this.landPotAuction.getPlot.call(0, 0)
+        const data = await this.landPotAuction.getPlot.call(1, 1)
         data[2].should.eq(bidder2)
         data[3].should.be.bignumber.equal(team2)
         data[4].should.be.bignumber.equal(ether(0.501).toNumber())
       })
       it('emitted Bid event', async () => {
         let event = await inLogs(this.logs, 'Bid')
-        event.args.x.should.be.bignumber.equal(0)
-        event.args.y.should.be.bignumber.equal(0)
+        event.args.x.should.be.bignumber.equal(1)
+        event.args.y.should.be.bignumber.equal(1)
         event.args.oldBidder.should.eq(bidder1)
         event.args.bidder.should.eq(bidder2)
         event.args.team.should.be.bignumber.equal(team2)
@@ -165,17 +175,17 @@ contract('LandPotAuction', (accounts) => {
   
     describe('bid with remaining balance', () => {
       beforeEach(async () => {
-        await this.landPotAuction.bid(0, 0, team2, bid2failed, { from: bidder2, value: bid2failed });
+        await this.landPotAuction.bid(1, 1, team2, bid2failed, { from: bidder2, value: bid2failed });
       })
       it('reverted for insufficient fund', async () => {
         await assertRevert(this.landPotAuction.bid(0, 0, team2, bid2success, { from: bidder2, value: 0 }))
       })
       describe('succeed for sufficient fund', () => {
         beforeEach(async () => {
-          await this.landPotAuction.bid(0, 0, team2, bid2success, { from: bidder2, value: ether(0.5) })
+          await this.landPotAuction.bid(1, 1, team2, bid2success, { from: bidder2, value: ether(0.5) })
         })
         it('current bidder and bid changed', async () => {
-          const data = await this.landPotAuction.getPlot.call(0, 0)
+          const data = await this.landPotAuction.getPlot.call(1, 1)
           data[2].should.eq(bidder2)
           data[3].should.be.bignumber.equal(team2)
           data[4].should.be.bignumber.equal(ether(0.501).toNumber())
