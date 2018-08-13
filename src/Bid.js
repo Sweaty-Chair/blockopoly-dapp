@@ -143,14 +143,8 @@ class Bid extends React.Component {
             bidEndTime = endingDate
             console.log(endingDate);
         })
-        // // Gets total balance.
-        // this.state.landPotAuctionInstance.totalBalance().then((result) => {
-        //     console.log(result.toNumber())
-        //     this.setState({ totalBalance: this.state.web3.utils.fromWei(result.toString()) })
-        // })
         // Gets balance of me.
         this.state.landPotAuctionInstance.balances(this.state.accounts[0]).then((result) => {
-        //     console.log(result.toNumber())
             this.setState({ balanceOfMe: this.state.web3.utils.fromWei(result.toString()) })
         })
     }
@@ -216,23 +210,20 @@ class Bid extends React.Component {
     }
 
     onSquareClick(i) {
-        const newSelect = i;
         this.setState({
-            selectedSquare: newSelect,
+            selectedSquare: i,
         })
     }
 
     selectTeam(team) {
-        const selectTeam = team;
         this.setState({
-            team: selectTeam,
+            team: team,
         })
     }
 
     handleBidChange(bid) {
-        const newBid = bid;
         this.setState({
-            bidPrice: newBid,
+            bidPrice: bid,
         })
     }
 
@@ -257,15 +248,12 @@ class Bid extends React.Component {
 
         this.state.landPotAuctionInstance.bid(squareChainIndex.row, squareChainIndex.column, teamId, this.state.web3.utils.toWei((bidPrice.toString()), 'ether'), { from: this.state.accounts[0], value: this.state.web3.utils.toWei((bidPrice.toString()), 'ether'), gasPrice: 20e9, gas: 130000 })
         .then((txhash) => {
-          console.log('bid sent')
-          console.log('Successfully placed bid, please wait for the transaction complete. <br />Transaction Hash: ' + this.getTransactionUrl(txhash.tx))
+          this.showTopAlert('Successfully placed bid, please wait for the transaction complete. <br />Transaction Hash: ' + this.getTransactionUrl(txhash.tx))
           this.waitForReceipt(txhash.tx, () => {
             this.showTopAlert('Bid successfully process, updating plots...')
-            // this.updateContractDetail();
           })
         }) 
         .catch((error) => {
-          // console.log("Failed with error: " + error.toString().replace("Error: ", ""))
           if (error.toString().includes("revert"))
             this.showTopAlert("Failed bidding: bid lower than the current bid", "danger")
           else
