@@ -1,7 +1,7 @@
 import React from 'react'
 import LandPotAuctionContract from '../build/contracts/LandPotAuction.json'
 import getWeb3 from './utils/getWeb3'
-// import makeBlockie from 'ethereum-blockies-base64'
+import makeBlockie from 'ethereum-blockies-base64'
 
 import Navbar from './components/Navbar.js'
 import TopAlert from './components/TopAlert.js'
@@ -367,7 +367,7 @@ class Bid extends React.Component {
         if (currentSquare) {
             currentSquarePrice = currentSquare.bid;
             if (currentSquare.bidder) {
-                // squareBidder = makeBlockie(currentSquare.bidder);
+                squareBidder = makeBlockie(currentSquare.bidder);
             }
         }
         let currentBalance = this.state.balanceOfMe;
@@ -377,7 +377,7 @@ class Bid extends React.Component {
         
         let accountIcon = "user.png";
         if (this.state.accounts[0]) {
-            // accountIcon = makeBlockie(this.state.accounts[0]);
+            accountIcon = makeBlockie(this.state.accounts[0]);
         }
         let scoreTable = [];
         for (let i = 0; i < teams.length; ++i) {
