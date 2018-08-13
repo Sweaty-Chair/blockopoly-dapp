@@ -202,6 +202,10 @@
   .team-C {
   background-color:#ffee58;
   }
+
+  .no-margin-bottom {
+    margin-bottom: 0px;
+  }
   
   .topnav {
   overflow:hidden;
@@ -215,25 +219,6 @@
   text-align:center;
   text-decoration:none;
   padding:14px 16px;
-  }
-
-  .top-alert {
-    position: relative;
-    overflow: hidden;
-    text-align: center;
-    vertical-align: middle;
-    line-height: 100%;
-  }
-
-  .top-alert p {
-    color: black;
-    margin: 18px;
-    line-height: 1.2
-  }
-
-  .top-alert a {
-    display: block;
-    float: right;
   }
 
   .topnav div {

@@ -1,27 +1,27 @@
 import React from 'react'
 
+import { Alert } from 'react-bootstrap';
+
 class TopAlert extends React.Component {
 
     render() {
-        const type = this.props.type;
         const content = this.props.content;
 
-        let className = "top-alert";
+        let alertType = "success";
         if (this.props.type === 'danger') {
-            className += " bgcolor-danger";
-        } else {
-            className += " bgcolor-success";
+            alertType = "danger";
         }
 
-        if (!content) {
-            className += " hidden"
+        if (content) {
+            return (
+                <Alert bsStyle={alertType} className="no-margin-bottom">
+                    {content}
+                    <button type="button" className="close" aria-label="Close" onClick={this.props.onCloseClick}>
+                    </button>
+                </Alert>
+            );
         }
-        return (
-            <div className={className}>
-                <p>{content}</p>
-                <a className="close" onClick={this.props.onCloseClick}/>
-            </div>
-        );
+        return null;
     }
 }
 
