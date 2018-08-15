@@ -151,6 +151,45 @@
   color:#960f0f;
   font-size:23px;
   }
+
+  #price-bar {
+    width: 100%;
+    height: 26px;
+    position: fixed;
+    background-color: #202021;
+    bottom: 32px;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  div.price-block {
+    margin-right: 50px;
+    display: inline-block;
+  }
+
+  .price-block p {
+    display: block;
+  }
+
+  .red {
+    background-color: #CF0000;
+    border-radius: 4px;
+  }
+
+  .green {
+      background-color: green;
+      border-radius: 4px;
+  }
+
+  #scroll-content {
+    margin-left: 0px;
+    display: inline;
+  }
+
+  #scroll-content-copy {
+      margin-left: 0px;
+      display: inline;
+  }
   
   .square {
   background:#fff;
@@ -220,6 +259,15 @@
   .no-margin-bottom {
     margin-bottom: 0px;
   }
+
+  span.price-label {
+    color: #f5c347;
+ }
+ 
+ span.price-tag {
+     color: #FFF;
+     font-size: 11px;
+ }
   
   .topnav {
   overflow:hidden;
