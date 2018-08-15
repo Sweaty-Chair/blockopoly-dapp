@@ -36,8 +36,10 @@ contract LandPotAuction is Pausable {
     uint8 winnerPortion;
     uint8 othersPortion;
   }
-
+  
   event Bid(uint8 x, uint8 y, address indexed oldBidder, address indexed bidder, uint8 team, uint256 currentBid);
+  event Refund(uint8 x, uint8 y, address indexed bidder, uint256 amount);
+  event Reward(address indexed bidder, uint256 bidderReward);
   event Withdrawn(address indexed payee, uint256 weiAmount);
 
   uint8 constant PLOT_WIDTH = 7; // 7x6 plots
@@ -130,21 +132,43 @@ contract LandPotAuction is Pausable {
     for (uint8 k = 0; k < PLOT_COUNT; k++) {
       Plot storage plot = currentAuction.plots[k];
       totalBid = totalBid.add(plot.currentBid);
-      if (plot.team == team && plot.bidder != winner) { // Keeps track of all other winnders
+      if (plot.team == team && plot.bidder != winner) { // Keeps track of all other winners
         otherWinners[k] = plot.bidder;
         totalOtherWinners++;
       }
       // Returns the extra bids to all bidders
-      balances[plot.bidder] = balances[plot.bidder].add(plot.maxBid.sub(plot.currentBid));
+      uint256 refund = plot.maxBid.sub(plot.currentBid);
+      balances[plot.bidder] = balances[plot.bidder].add(refund);
+      emitRefund(k, plot.bidder, refund); // Avoid stack too deep error
     }
     // Reward winner and others
-    balances[winner] = balances[winner].add(totalBid.mul(teams_[team].winnerPortion).div(100));
+    uint256 winnerReward = totalBid.mul(teams_[team].winnerPortion).div(100);
+    rewardWinner(winner, winnerReward);
     uint256 otherReward = totalBid.mul(teams_[team].othersPortion).div(100).div(totalOtherWinners);
     for (k = 0; k < totalOtherWinners; k++)
-      balances[otherWinners[k]] = balances[otherWinners[k]].add(otherReward);
+      rewardWinner(otherWinners[k], otherReward);
+    // Creates and Rewards the land for winner
     bidLandContract_.createAndTransfer(winner, currentWorldId, currentAuction.x, currentAuction.y);
     bidLandContract_.setBidPrice(currentWorldId, currentAuction.x, currentAuction.y, totalBid);
   }
+
+  /**
+   * @dev Emits the Refund event, only for avoiding stack too deep error.
+   */
+  function emitRefund(uint8 _index, address _bidder, uint256 _weiAmount) internal {
+    (uint8 x, uint8 y) = plotIndexToPosition(_index);
+    emit Refund(x, y, _bidder, _weiAmount);
+  }
+  
+  /**
+   * @dev Rewards the winner and emits event.
+   */
+  function rewardWinner(address _winner, uint256 _reward) internal {
+    balances[_winner] = balances[_winner].add(_reward);
+    emit Reward(_winner, _reward);
+  }
+
+  // function rewardOtherWinners(address[] otherWinnders)
 
   /**
    * @dev Restarts the whole game with new world ID. World ID must be created with World contract first.
@@ -240,16 +264,18 @@ contract LandPotAuction is Pausable {
   function bid(uint8 _x, uint8 _y, uint8 _team, uint256 _newMaxBid) external payable whenNotPaused canBid {
     uint8 index = plotPositionToIndex(_x, _y);
     Plot storage plot = currentAuction.plots[index];
-    require(_newMaxBid >= plot.currentBid.add(1 finney), "Mix bit less than current bid."); // Must larger than current bid by 1 finney
+    require(_newMaxBid >= plot.currentBid.add(1 finney), "Mix bit less than current bid."); // Must larger than current bid by at least 1 finney
     require(_newMaxBid <= msg.value.add(balances[msg.sender]), "Max bid less than available fund.");
     if (msg.value < _newMaxBid) // Take some ethers from balance
       subBalance(msg.sender, _newMaxBid.sub(msg.value));
     if (_newMaxBid <= plot.maxBid) { // Failed to outbid current bidding, less than its max bid
       addBalance(msg.sender, _newMaxBid); // Add the current bid to balance, so the bidder can withdraw/reuse later
-      plot.currentBid = _newMaxBid.add(1 finney); // Increase the current bid
-      emit Bid(plot.x, plot.y, msg.sender, plot.bidder, plot.team, _newMaxBid.add(1 finney));
+      plot.currentBid = _newMaxBid; // Increase the current bid
+      emit Bid(plot.x, plot.y, msg.sender, plot.bidder, plot.team, _newMaxBid);
     } else {
-      uint256 newCurrentBid = plot.maxBid.add(1 finney);
+      uint256 newCurrentBid = plot.maxBid;
+      if (plot.maxBid == 0)
+        newCurrentBid = 1 finney; // New bid start from 1 finney
       emit Bid(plot.x, plot.y, plot.bidder, msg.sender, _team, newCurrentBid);
       if (plot.bidder != address(0)) // Add the bid of the old bidder to balance, so he can withdraw/reuse later
         addBalance(plot.bidder, plot.maxBid);

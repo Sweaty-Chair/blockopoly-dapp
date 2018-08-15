@@ -81,142 +81,150 @@ contract('LandPotAuction', (accounts) => {
   //   })
   // })
 
-  describe('bid', () => {
-    const bidder1 = accounts[1]
-    const bidder2 = accounts[2]
-    const team1 = 1
-    const team2 = 2
-    const bid1 = ether(0.5)
-    const bid2failed = ether(0.2)
-    const bid2success = ether(0.7)
-    const finney = ether(0.001)
-
-    beforeEach(async () => {
-      const { logs } = await this.landPotAuction.bid(1, 1, team1, bid1, { from: bidder1, value: bid1 });
-      this.logs = logs
-    })
-
-    describe('succeed bid on empty plot', () => {
-      it('current bidder and bid changed', async () => {
-        const data = await this.landPotAuction.getPlot.call(1, 1)
-        data[2].should.eq(bidder1)
-        data[3].should.be.bignumber.equal(team1)
-        data[4].should.be.bignumber.equal(finney) // first bit is always 1 finney
-      })
-      it('emitted Bid event', async () => {
-        const event = await inLogs(this.logs, 'Bid')
-        event.args.x.should.be.bignumber.equal(1)
-        event.args.y.should.be.bignumber.equal(1)
-        event.args.bidder.should.eq(bidder1)
-        event.args.team.should.be.bignumber.equal(team1)
-        event.args.currentBid.should.be.bignumber.equal(finney) // first bit is always 1 finney
-      })
-    })
-
-    describe('failed bid with less than max bid', () => {
-      beforeEach(async () => {
-        const { logs } = await this.landPotAuction.bid(1, 1, team2, bid2failed, { from: bidder2, value: bid2failed });
-        this.logs = logs
-      })
-      it('current bidder didnt changed but current bid changed', async () => {
-        const data = await this.landPotAuction.getPlot.call(1, 1)
-        data[2].should.eq(bidder1)
-        data[3].should.be.bignumber.equal(team1)
-        data[4].should.be.bignumber.equal(ether(0.201)) // current bid should be bid price + 1 finney
-      })
-      it('emitted Bid event', async () => {
-        const event = await inLogs(this.logs, 'Bid')
-        event.args.x.should.be.bignumber.equal(1)
-        event.args.y.should.be.bignumber.equal(1)
-        event.args.oldBidder.should.eq(bidder2)
-        event.args.bidder.should.eq(bidder1)
-        event.args.team.should.be.bignumber.equal(team1)
-        event.args.currentBid.should.be.bignumber.equal(ether(0.201))
-      })
-      it('total balances added', async () => {
-        const totalBalance = await this.landPotAuction.totalBalance.call()
-        totalBalance.should.be.bignumber.equal(bid2failed)
-      })
-      it('balance return to second bidder is correct', async () => {
-        const balance = await this.landPotAuction.balances.call(bidder2)
-        balance.should.be.bignumber.equal(bid2failed)
-      })
-    })
-
-    describe('succeed bid with higher than max bid', () => {
-      beforeEach(async () => {
-        const { logs } = await this.landPotAuction.bid(1, 1, team2, bid2success, { from: bidder2, value: bid2success });
-        this.logs = logs
-      })
-      it('current bidder and bid changed', async () => {
-        const data = await this.landPotAuction.getPlot.call(1, 1)
-        data[2].should.eq(bidder2)
-        data[3].should.be.bignumber.equal(team2)
-        data[4].should.be.bignumber.equal(ether(0.501).toNumber())
-      })
-      it('emitted Bid event', async () => {
-        let event = await inLogs(this.logs, 'Bid')
-        event.args.x.should.be.bignumber.equal(1)
-        event.args.y.should.be.bignumber.equal(1)
-        event.args.oldBidder.should.eq(bidder1)
-        event.args.bidder.should.eq(bidder2)
-        event.args.team.should.be.bignumber.equal(team2)
-        event.args.currentBid.should.be.bignumber.equal(ether(0.501).toNumber())
-      })
-      it('total balances added', async () => {
-        const totalBalance = await this.landPotAuction.totalBalance.call()
-        totalBalance.should.be.bignumber.equal(bid1)
-      })
-      it('balance of first bidder added', async () => {
-        const balance = await this.landPotAuction.balances.call(bidder1)
-        balance.should.be.bignumber.equal(bid1)
-      })
-    })
-  
-    describe('bid with remaining balance', () => {
-      beforeEach(async () => {
-        await this.landPotAuction.bid(1, 1, team2, bid2failed, { from: bidder2, value: bid2failed });
-      })
-      it('reverted for insufficient fund', async () => {
-        await assertRevert(this.landPotAuction.bid(0, 0, team2, bid2success, { from: bidder2, value: 0 }))
-      })
-      describe('succeed for sufficient fund', () => {
-        beforeEach(async () => {
-          await this.landPotAuction.bid(1, 1, team2, bid2success, { from: bidder2, value: ether(0.5) })
-        })
-        it('current bidder and bid changed', async () => {
-          const data = await this.landPotAuction.getPlot.call(1, 1)
-          data[2].should.eq(bidder2)
-          data[3].should.be.bignumber.equal(team2)
-          data[4].should.be.bignumber.equal(ether(0.501).toNumber())
-        })
-        it('total balances emptied', async () => {
-          const totalBalance = await this.landPotAuction.totalBalance.call()
-          totalBalance.should.be.bignumber.equal(bid1)
-        })
-        it('balance of second bidder emptied', async () => {
-          const balance = await this.landPotAuction.balances.call(bidder2)
-          balance.should.be.bignumber.equal(0)
-        })
-      })
-    })
-  })
-
-  // describe('finalizeAuction', () => {
+  // describe('bid', () => {
   //   const bidder1 = accounts[1]
   //   const bidder2 = accounts[2]
-  //   const bidder3 = accounts[3]
   //   const team1 = 1
   //   const team2 = 2
-    
-  //   beforeEach(async () => {
-      
+  //   const bid1 = ether(0.5)
+  //   const bid2failed = ether(0.2)
+  //   const bid2success = ether(0.7)
+  //   const finney = ether(0.001)
+
+  //   it('failed bidding with less than 1 finney', async () => {
+  //     await assertRevert(this.landPotAuction.bid(1, 1, team1, ether(0.0005), { from: bidder1, value: ether(0.0005) }))
   //   })
 
-  //   it('ok', async () => {
-  //     const data = await this.landPotAuction.getPlot.call(0, 0)
-  //     console.log(data)
+  //   beforeEach(async () => {
+  //     const { logs } = await this.landPotAuction.bid(1, 1, team1, bid1, { from: bidder1, value: bid1 });
+  //     this.logs = logs
+  //   })
+
+  //   describe('succeed bid on empty plot', () => {
+  //     it('current bidder and bid changed', async () => {
+  //       const data = await this.landPotAuction.getPlot.call(1, 1)
+  //       data[2].should.eq(bidder1)
+  //       data[3].should.be.bignumber.equal(team1)
+  //       data[4].should.be.bignumber.equal(finney) // first bit is always 1 finney
+  //     })
+  //     it('emitted Bid event', async () => {
+  //       const event = await inLogs(this.logs, 'Bid')
+  //       event.args.x.should.be.bignumber.equal(1)
+  //       event.args.y.should.be.bignumber.equal(1)
+  //       event.args.bidder.should.eq(bidder1)
+  //       event.args.team.should.be.bignumber.equal(team1)
+  //       event.args.currentBid.should.be.bignumber.equal(finney) // first bit is always 1 finney
+  //     })
+  //   })
+
+  //   describe('failed bid with less than max bid', () => {
+  //     beforeEach(async () => {
+  //       const { logs } = await this.landPotAuction.bid(1, 1, team2, bid2failed, { from: bidder2, value: bid2failed });
+  //       this.logs = logs
+  //     })
+  //     it('current bidder didnt changed but current bid changed', async () => {
+  //       const data = await this.landPotAuction.getPlot.call(1, 1)
+  //       data[2].should.eq(bidder1)
+  //       data[3].should.be.bignumber.equal(team1)
+  //       data[4].should.be.bignumber.equal(ether(0.2)) // current bid should be bid price
+  //     })
+  //     it('emitted Bid event', async () => {
+  //       const event = await inLogs(this.logs, 'Bid')
+  //       event.args.x.should.be.bignumber.equal(1)
+  //       event.args.y.should.be.bignumber.equal(1)
+  //       event.args.oldBidder.should.eq(bidder2)
+  //       event.args.bidder.should.eq(bidder1)
+  //       event.args.team.should.be.bignumber.equal(team1)
+  //       event.args.currentBid.should.be.bignumber.equal(ether(0.2))
+  //     })
+  //     it('total balances added', async () => {
+  //       const totalBalance = await this.landPotAuction.totalBalance.call()
+  //       totalBalance.should.be.bignumber.equal(bid2failed)
+  //     })
+  //     it('balance return to second bidder is correct', async () => {
+  //       const balance = await this.landPotAuction.balances.call(bidder2)
+  //       balance.should.be.bignumber.equal(bid2failed)
+  //     })
+  //   })
+
+  //   describe('succeed bid with higher than max bid', () => {
+  //     beforeEach(async () => {
+  //       const { logs } = await this.landPotAuction.bid(1, 1, team2, bid2success, { from: bidder2, value: bid2success });
+  //       this.logs = logs
+  //     })
+  //     it('current bidder and bid changed', async () => {
+  //       const data = await this.landPotAuction.getPlot.call(1, 1)
+  //       data[2].should.eq(bidder2)
+  //       data[3].should.be.bignumber.equal(team2)
+  //       data[4].should.be.bignumber.equal(ether(0.5))
+  //     })
+  //     it('emitted Bid event', async () => {
+  //       let event = await inLogs(this.logs, 'Bid')
+  //       event.args.x.should.be.bignumber.equal(1)
+  //       event.args.y.should.be.bignumber.equal(1)
+  //       event.args.oldBidder.should.eq(bidder1)
+  //       event.args.bidder.should.eq(bidder2)
+  //       event.args.team.should.be.bignumber.equal(team2)
+  //       event.args.currentBid.should.be.bignumber.equal(ether(0.5))
+  //     })
+  //     it('total balances added', async () => {
+  //       const totalBalance = await this.landPotAuction.totalBalance.call()
+  //       totalBalance.should.be.bignumber.equal(bid1)
+  //     })
+  //     it('balance of first bidder added', async () => {
+  //       const balance = await this.landPotAuction.balances.call(bidder1)
+  //       balance.should.be.bignumber.equal(bid1)
+  //     })
+  //   })
+  
+  //   describe('bid with remaining balance', () => {
+  //     beforeEach(async () => {
+  //       await this.landPotAuction.bid(1, 1, team2, bid2failed, { from: bidder2, value: bid2failed });
+  //     })
+  //     it('reverted for insufficient fund', async () => {
+  //       await assertRevert(this.landPotAuction.bid(1, 1, team2, bid2success, { from: bidder2, value: 0 }))
+  //     })
+  //     describe('succeed for sufficient fund', () => {
+  //       beforeEach(async () => {
+  //         await this.landPotAuction.bid(1, 1, team2, bid2success, { from: bidder2, value: ether(0.5) })
+  //       })
+  //       it('current bidder and bid changed', async () => {
+  //         const data = await this.landPotAuction.getPlot.call(1, 1)
+  //         data[2].should.eq(bidder2)
+  //         data[3].should.be.bignumber.equal(team2)
+  //         data[4].should.be.bignumber.equal(ether(0.5))
+  //       })
+  //       it('total balances emptied', async () => {
+  //         const totalBalance = await this.landPotAuction.totalBalance.call()
+  //         totalBalance.should.be.bignumber.equal(bid1)
+  //       })
+  //       it('balance of second bidder emptied', async () => {
+  //         const balance = await this.landPotAuction.balances.call(bidder2)
+  //         balance.should.be.bignumber.equal(0)
+  //       })
+  //     })
   //   })
   // })
+
+  describe('finalizeAuction', () => {
+    const bidder1 = accounts[1]
+    const bidder2 = accounts[2]
+    const bidder3 = accounts[3]
+    const team1 = 1
+    const team2 = 2
+    
+    beforeEach(async () => {
+      
+    })
+
+    it('bidder 2 win (1,1)', async () => {
+      await this.landPotAuction.bid(1, 1, team1, ether(0.3), { from: bidder1, value: ether(0.3) });
+      await this.landPotAuction.bid(1, 1, team2, ether(0.4), { from: bidder2, value: ether(0.4) });
+      const data = await this.landPotAuction.getPlot.call(1, 1)
+      data[2].should.eq(bidder2)
+      data[3].should.be.bignumber.equal(team2)
+      data[4].should.be.bignumber.equal(ether(0.3))
+    })
+  })
 
 })
