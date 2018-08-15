@@ -4,7 +4,7 @@ function Navbar(props) {
     return (
         <div>
             <nav className="topnav">
-                <a href="#">Block 42 Monopoly</a>
+                <a href="#">Monopoly</a>
                 <div>
                     <button className="withdraw" onClick={props.Onclick}>Withdraw</button>
                 </div>

@@ -11,11 +11,11 @@ import './css/open-sans.css'
 import './css/pure-min.css'
 import './App.css'
 import './css/main.css'
-import Navbar from './components/Navbar';
 
 ReactDOM.render(
   <div>
     <MainNavbar />
+    <Bid />
   </div>,
   document.getElementById('root')
 );

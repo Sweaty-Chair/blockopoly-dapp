@@ -33,6 +33,16 @@
   .body {
   min-width: 500px;
   }
+
+  .bid-panel {
+    position: fixed;
+    width: 395px;
+    margin-top:55px;
+    height: 100%;
+    right: 0px;
+    background-color:rgba(0,0,0,0.87);
+    border-radius: 5px;
+  }
   
   .center {
   text-align:center;

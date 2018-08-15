@@ -386,7 +386,7 @@ class Bid extends React.Component {
             scoreTable.push(row);
         }
         return (
-            <div className="body">
+            <div className="bid-panel" id="land-info">
                 <Navbar
                     pool={currentBalance}
                     accountIcon={accountIcon}
