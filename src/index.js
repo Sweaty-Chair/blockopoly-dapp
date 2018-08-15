@@ -11,11 +11,13 @@ import './css/open-sans.css'
 import './css/pure-min.css'
 import './App.css'
 import './css/main.css'
+import Footer from './components/Footer';
 
 ReactDOM.render(
   <div>
     <MainNavbar />
     <Bid />
+    <Footer />
   </div>,
   document.getElementById('root')
 );
