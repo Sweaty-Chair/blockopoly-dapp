@@ -76,6 +76,16 @@
   .dark-half {
   background-color:rgba(0,0,0,0.5);
   }
+
+  div.control-type-box {
+    position: fixed;
+      width: 100px;
+      height: 40px;
+      bottom: 65px;
+      left: 30px;
+      display: flex;
+      justify-content: flex-end;
+  }
   
   .float-right {
   float:right;

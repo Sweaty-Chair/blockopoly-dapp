@@ -7,6 +7,7 @@
 
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdn.rawgit.com/ethereum/web3.js/1.0/dist/web3.min.js"></script>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.1/css/all.css" integrity="sha384-O8whS3fhG2OnA5Kas0Y9l3cfpmYjapjI0E4theH4iuMD+pLhbf6JI0jIMfYcK3yZ" crossorigin="anonymous">
 
     <script src="js/threejs/three.js"></script>
     <!--offical library-->
@@ -55,6 +56,17 @@
   </head>
   <body>
     <div id="root"></div>
+    <div class="control-type-box btn-group btn-group-toggle" data-toggle="buttons" id="control-toggle-group">
+      <label class="btn btn-secondary active">
+    <input type="radio" name="options" id="orbit-control" autocomplete="off" checked><i class="fa fa-globe" aria-hidden="true"></i>
+      </label>
+      <label class="btn btn-secondary">
+    <input type="radio" name="options" id="fps-control" autocomplete="off"><i class="fa fa-user" aria-hidden="true"></i>
+      </label>
+      <label class="btn btn-secondary">
+    <input type="radio" name="options" id="fly-control" autocomplete="off"><i class="fa fa-plane" aria-hidden="true"></i>
+      </label>
+  </div>
     <script>
       Index.initVox();
     </script>

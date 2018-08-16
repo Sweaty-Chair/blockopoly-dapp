@@ -27,6 +27,10 @@ class Index {
 		ModelBuilder.buildFromVox(Land.lands)
 		player = new Player(camera,ControlTypeEnum.Orbit);
 		player.Initialize();
+
+		document.getElementById("fly-control").change = () => {player.SetControlType(ControlTypeEnum.Flight)};
+		document.getElementById("fps-control").change = () => {player.SetControlType(ControlTypeEnum.FPS)};
+		document.getElementById("orbit-control").change = () => {player.SetControlType(ControlTypeEnum.Orbit)};
 		
 		Index.initUI();
 	}
