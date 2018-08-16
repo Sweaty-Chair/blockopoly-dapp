@@ -231,8 +231,8 @@ class Bid extends React.Component {
         if (isNaN(squareId) || squareId < 0 || squareId > 41) {
             return null;
         }
-        let row = parseInt(squareId / BOARD_COLUMNS, 10) - 3;
-        let column = parseInt(squareId % BOARD_COLUMNS, 10) - 3;
+        let row = parseInt(squareId / BOARD_COLUMNS, 10) + 1;
+        let column = parseInt(squareId % BOARD_COLUMNS, 10) + 1;
         return {row: row, column: column};
     }
 
