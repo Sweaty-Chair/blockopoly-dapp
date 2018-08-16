@@ -9,17 +9,22 @@ class TopAlert extends React.Component {
 
         let alertType = "success";
         if (this.props.type === 'danger') {
-            alertType = "danger";
+            alertType = " alert-danger";
+        } else {
+            alertType = " alert-success"
         }
 
         if (content) {
-            // return (
-            //     <Alert bsStyle={alertType} className="no-margin-bottom">
-            //         {content}
-            //         <button type="button" className="close" aria-label="Close" onClick={this.props.onCloseClick}>
-            //         </button>
-            //     </Alert>
-            // );
+            return (
+                <div>
+                    <div className={"alert alert-dismissible fade show" + alertType} role="alert">
+                        {this.props.content}
+                        <button type="button" className="close" aria-label="Close" onClick={this.props.onCloseClick}>
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+            );
         }
         return null;
     }

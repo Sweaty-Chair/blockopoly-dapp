@@ -23,7 +23,6 @@ class PriceScroll extends React.Component {
         fetch("https://api.coinmarketcap.com/v2/ticker/?limit=10&structure=array")
             .then(res => res.json())
             .then((result) => {
-                console.log(result.data);
                 this.setState({
                     currencyList: result.data,
                 });
