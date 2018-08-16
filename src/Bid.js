@@ -31,6 +31,8 @@ class Bid extends React.Component {
         this.updateScores = this.updateScores.bind(this);
         this.checkAccounts = this.checkAccounts.bind(this);
         this.updateContractDetail = this.updateContractDetail.bind(this);
+        this.showTopAlert = this.showTopAlert.bind(this);
+        this.hideTopAlert = this.hideTopAlert.bind(this);
         this.state = {
             web3: null,
             teams: ["team-A", "team-B", "team-C", "team-D"],
@@ -173,9 +175,19 @@ class Bid extends React.Component {
     }
 
     showTopAlert(context, type) {
+        if (this.topAlertTimeout) {
+            clearTimeout(this.topAlertTimeout);
+        }
         this.setState({
             topAlertContent: context,
             topAlertType: type,
+        })
+        this.topAlertTimeout = setTimeout(this.hideTopAlert, 5000);
+    }
+
+    hideTopAlert() {
+        this.setState({
+            topAlertContent: null,
         })
     }
 
