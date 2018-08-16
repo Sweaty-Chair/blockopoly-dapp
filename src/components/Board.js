@@ -100,7 +100,6 @@ class Board extends React.Component {
                     {this.renderSquare(40)}
                     {this.renderSquare(41)}
                 </div>
-                <div className="float-right">{this.props.timeLeft}</div>
             </div>
         );
     }

@@ -3,11 +3,12 @@ import LandPotAuctionContract from '../build/contracts/LandPotAuction.json'
 import getWeb3 from './utils/getWeb3'
 import makeBlockie from 'ethereum-blockies-base64'
 
-import Navbar from './components/Navbar.js'
+import MainNavbar from './components/MainNavbar.js'
 import TopAlert from './components/TopAlert.js'
 import Board from './components/Board.js'
 import TeamScoreTable from './components/TeamScoreTable'
 import Info from './components/Info'
+import LandInfo from './components/LandInfo'
 
 import './css/oswald.css'
 import './css/open-sans.css'
@@ -366,6 +367,19 @@ class Bid extends React.Component {
         }
     }
 
+    getJackpot() {
+        let sum = parseFloat(0);
+        for (let i = 0; i < this.state.board.squares.length; ++i) {
+            let currentSquare = this.state.board.squares[i];
+
+            if (currentSquare && currentSquare.bid > 0) {
+                sum += parseFloat(this.state.board.squares[i].bid);
+            }
+        }
+        sum = sum.toFixed(3) + " ETH";
+        return sum;
+    }
+
     render() {
         const selectedSquareId = this.state.selectedSquare;
         const selectTeam = this.state.team;
@@ -376,6 +390,7 @@ class Bid extends React.Component {
         const currentSquare = squares[selectedSquareId];
         let squareBidder = "";
         let currentSquarePrice;
+        const jackpot = this.getJackpot();
         if (currentSquare) {
             currentSquarePrice = currentSquare.bid;
             if (currentSquare.bidder) {
@@ -399,9 +414,13 @@ class Bid extends React.Component {
         }
         return (
             <div className="bid-panel" id="land-info">
-                <Navbar
+                <MainNavbar
                     pool={currentBalance}
                     accountIcon={accountIcon}
+                />
+                <LandInfo
+                    timeLeft={this.state.timeLeft}
+                    jackpot={jackpot}
                 />
                 <TopAlert
                     content={this.state.topAlertContent}
@@ -412,7 +431,6 @@ class Bid extends React.Component {
                     selectId={selectedSquareId}
                     squares={squares}
                     onClick={(i) => this.onSquareClick(i)}
-                    timeLeft={this.state.timeLeft}
                 />
                 <Info
                     teams={teams}

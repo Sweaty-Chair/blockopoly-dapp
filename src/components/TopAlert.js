@@ -17,7 +17,7 @@ class TopAlert extends React.Component {
         if (content) {
             return (
                 <div>
-                    <div className={"alert alert-dismissible fade show" + alertType} role="alert">
+                    <div className={"alert alert-dismissible fade show no-margin-bottom" + alertType} role="alert">
                         {this.props.content}
                         <button type="button" className="close" aria-label="Close" onClick={this.props.onCloseClick}>
                             <span aria-hidden="true">&times;</span>

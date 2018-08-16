@@ -17,7 +17,6 @@ import './css/main.css'
 
 ReactDOM.render(
   <div>
-    <MainNavbar />
     <Bid />
     <PriceScroll />
     <Footer />
