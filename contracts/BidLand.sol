@@ -49,7 +49,7 @@ contract BidLand is Land, BidLandBasic {
   /**
   * @dev Gets the name of the specific world-x-y.
   */
-  function biddingPriceOf(uint32 _worldId, int64 _x, int64 _y) public view returns (uint256) {
+  function biddingPriceOfLand(uint32 _worldId, int64 _x, int64 _y) public view returns (uint256) {
     return biddingPrice[encodeTokenId(_worldId, _x, _y)];
   }
 
@@ -63,7 +63,7 @@ contract BidLand is Land, BidLandBasic {
   /**
   * @dev Gets the name of the specific world-x-y.
   */
-  function nameOf(uint32 _worldId, int64 _x, int64 _y) public view returns (string) {
+  function nameOfLand(uint32 _worldId, int64 _x, int64 _y) public view returns (string) {
     return names[encodeTokenId(_worldId, _x, _y)];
   }
 
@@ -77,7 +77,7 @@ contract BidLand is Land, BidLandBasic {
   /**
   * @dev Gets the descripition of the specific world-x-y.
   */
-  function descriptionOf(uint32 _worldId, int64 _x, int64 _y) public view returns (string) {
+  function descriptionOfLand(uint32 _worldId, int64 _x, int64 _y) public view returns (string) {
     return descriptions[encodeTokenId(_worldId, _x, _y)];
   }
 
@@ -91,8 +91,8 @@ contract BidLand is Land, BidLandBasic {
   /**
   * @dev Gets the info of the specific world-x-y.
   */
-  function infoOf(uint32 _worldId, int64 _x, int64 _y) public view returns (string, string) {
-    return (nameOf(_worldId, _x, _y), descriptionOf(_worldId, _x, _y));
+  function infoOfLand(uint32 _worldId, int64 _x, int64 _y) public view returns (string, string) {
+    return (nameOfLand(_worldId, _x, _y), descriptionOfLand(_worldId, _x, _y));
   }
 
 }

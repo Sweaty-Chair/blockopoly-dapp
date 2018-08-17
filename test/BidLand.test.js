@@ -17,33 +17,36 @@ contract('BidLand', (accounts) => {
     this.world = await World.new()
     this.bidLand = await BidLand.new(this.world.address)
     await this.world.createAndTransfer(worldOwner, 0, { from: creator })
-    await this.bidLand.createAndTransfer(landOwner, 0, 0, 0, { from: worldOwner })
   })
 
   describe('setInfo', () => {
     it('creator can set info', async () => {
-      await this.bidLand.setInfo(0, 0, 0, "name1", "description1", { from: creator })
-      const data = await this.bidLand.infoOf.call(0)
+      await this.bidLand.createAndTransfer(landOwner, 0, 1, 1, { from: worldOwner })
+      await this.bidLand.setInfo(0, 1, 1, "name1", "description1", { from: creator })
+      const data = await this.bidLand.infoOfLand(0, 1, 1)
       data[0].should.be.equal("name1")
       data[1].should.be.equal("description1")
     })
 
     it('world owner can set info', async () => {
-      await this.bidLand.setInfo(0, 0, 0, "name2", "description2", { from: worldOwner })
-      const data = await this.bidLand.infoOf.call(0)
+      await this.bidLand.createAndTransfer(landOwner, 0, 1, 2, { from: worldOwner })
+      await this.bidLand.setInfo(0, 1, 2, "name2", "description2", { from: worldOwner })
+      const data = await this.bidLand.infoOfLand(0, 1, 2)
       data[0].should.be.equal("name2")
       data[1].should.be.equal("description2")
     })
 
     it('land owner can set info', async () => {
-      await this.bidLand.setInfo(0, 0, 0, "name3", "description3", { from: landOwner })
-      const data = await this.bidLand.infoOf.call(0)
+      await this.bidLand.createAndTransfer(landOwner, 0, 2, 1, { from: worldOwner })
+      await this.bidLand.setInfo(0, 2, 1, "name3", "description3", { from: landOwner })
+      const data = await this.bidLand.infoOfLand(0, 2, 1)
       data[0].should.be.equal("name3")
       data[1].should.be.equal("description3")
     })
 
     it('unauthorized address cannot set info', async () => {
-      await assertRevert(this.bidLand.setInfo(0, 0, 0, "name", "description", { from: unauthorized }))
+      await this.bidLand.createAndTransfer(landOwner, 0, 2, 2, { from: worldOwner })
+      await assertRevert(this.bidLand.setInfo(0, 2, 2, "name", "description", { from: unauthorized }))
     })
   })
 })
