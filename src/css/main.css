@@ -330,3 +330,8 @@
     position: fixed;
     bottom: 0px;
   }
+
+  .balance-text {
+    position: relative;
+    bottom: -3px;
+  }
