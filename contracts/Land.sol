@@ -28,14 +28,14 @@ contract Land is ERC721Token, Pausable, LandBasic {
    * @dev Don't accept payment directly to contract.
    */
   function() public payable {
-    revert();
+    revert("Do not accept payment directly.");
   }
 
   /**
    * @dev Throws if a position not within valid range.
    */
   modifier validPosition(uint32 _world, int64 _x, int64 _y) {
-    require(isValidPosition(_world, _x, _y));
+    require(isValidPosition(_world, _x, _y), "Invalid position.");
     _;
   }
 
@@ -50,7 +50,7 @@ contract Land is ERC721Token, Pausable, LandBasic {
    * @dev Throws if called by any account other than the world owner or contract owner.
    */
   modifier onlyAuthorized(uint32 _world) {
-    require(msg.sender == worldContract_.ownerOf(_world) || msg.sender == owner || authorizedAddresses_[msg.sender]);
+    require(msg.sender == worldContract_.ownerOf(_world) || msg.sender == owner || authorizedAddresses_[msg.sender], "Not authorized.");
     _;
   }
 
@@ -58,7 +58,7 @@ contract Land is ERC721Token, Pausable, LandBasic {
    * @dev Authorizes a contract or a person the right to create a land token, contract owner or world creator only.
    */
   function authorize(address recipient) public onlyOwner {
-    require(recipient != address(0) && recipient != owner);
+    require(recipient != address(0) && recipient != owner, "Invalid recipient.");
     authorizedAddresses_[recipient] = true;
   }
 
@@ -88,20 +88,20 @@ contract Land is ERC721Token, Pausable, LandBasic {
     _worldId = uint8((_tokenId & BITS_WORLD) >> 224); // shift right for 2x112 bits
     _x = int32((_tokenId & BITS_X) >> 112); // shift right for 112 bits
     _y = int32(_tokenId & BITS_Y);
-    require(isValidPosition(_worldId, _x, _y));
+    require(isValidPosition(_worldId, _x, _y), "Invalid tokenId.");
   }
 
   /**
    * @dev Gets the owner of the specified position.
    */
-  function ownerOf(uint32 _worldId, int64 _x, int64 _y) public view returns (address) {
+  function ownerOfLand(uint32 _worldId, int64 _x, int64 _y) public view returns (address) {
     return ownerOf(encodeTokenId(_worldId, _x, _y));
   }
 
   /**
    * @dev Returns whether the specified land exists.
    */
-  function exists(uint32 _worldId, int64 _x, int64 _y) public view returns (bool) {
+  function existsLand(uint32 _worldId, int64 _x, int64 _y) public view returns (bool) {
     return exists(encodeTokenId(_worldId, _x, _y));
   }
 
@@ -176,7 +176,7 @@ contract Land is ERC721Token, Pausable, LandBasic {
    */
   function detroy(uint32 _worldId, int64 _x, int64 _y) public onlyAuthorized(_worldId) validPosition(_worldId, _x, _y) {
     uint256 tokenId = encodeTokenId(_worldId, _x, _y);
-    require(isApprovedOrOwner(msg.sender, tokenId));
+    require(isApprovedOrOwner(msg.sender, tokenId), "Not approved.");
     _burn(msg.sender, tokenId);
   }
 

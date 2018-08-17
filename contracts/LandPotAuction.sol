@@ -38,7 +38,7 @@ contract LandPotAuction is Pausable {
   }
   
   event Bid(uint8 x, uint8 y, address indexed oldBidder, address indexed bidder, uint8 team, uint256 currentBid);
-  event Refund(uint8 x, uint8 y, address indexed bidder, uint256 amount);
+  event Refund(uint8 x, uint8 y, address indexed bidder, uint256 weiAmount);
   event Reward(address indexed bidder, uint256 bidderReward);
   event Withdrawn(address indexed payee, uint256 weiAmount);
 
@@ -124,7 +124,8 @@ contract LandPotAuction is Pausable {
    * @dev Finalizes the current auction and rewards the land to winner, after the auction ended.
    */
   function finalizeAuction(address winner, uint8 team) external onlyOwner {
-    require(currentAuction.endingTime < now, "Current auction not yet ended.");
+    require(currentAuction.endingTime <= now, "Current auction not yet ended.");
+    require(team > 0 && team <= teams_.length, "Invalid team number.");
     uint256 totalBid = 0;
     address[] memory otherWinners = new address[](PLOT_COUNT);
     uint8 totalOtherWinners = 0;
@@ -142,11 +143,16 @@ contract LandPotAuction is Pausable {
       emitRefund(k, plot.bidder, refund); // Avoid stack too deep error
     }
     // Reward winner and others
-    uint256 winnerReward = totalBid.mul(teams_[team].winnerPortion).div(100);
+    Team storage t = teams_[team - 1];
+    uint256 winnerReward = totalBid.mul(t.winnerPortion).div(100);
     rewardWinner(winner, winnerReward);
-    uint256 otherReward = totalBid.mul(teams_[team].othersPortion).div(100).div(totalOtherWinners);
-    for (k = 0; k < totalOtherWinners; k++)
-      rewardWinner(otherWinners[k], otherReward);
+    uint256 otherReward = totalBid.mul(t.othersPortion).div(100).div(totalOtherWinners);
+    for (k = 0; k < PLOT_COUNT; k++) {
+      if (otherWinners[k] != address(0))
+        rewardWinner(otherWinners[k], otherReward);
+    }
+    // Add the rest to jackpot
+    jackpot = jackpot.add(totalBid.mul(100 - t.winnerPortion - t.othersPortion).div(100));
     // Creates and Rewards the land for winner
     bidLandContract_.createAndTransfer(winner, currentWorldId, currentAuction.x, currentAuction.y);
     bidLandContract_.setBidPrice(currentWorldId, currentAuction.x, currentAuction.y, totalBid);
@@ -156,8 +162,10 @@ contract LandPotAuction is Pausable {
    * @dev Emits the Refund event, only for avoiding stack too deep error.
    */
   function emitRefund(uint8 _index, address _bidder, uint256 _weiAmount) internal {
-    (uint8 x, uint8 y) = plotIndexToPosition(_index);
-    emit Refund(x, y, _bidder, _weiAmount);
+    if (_bidder != address(0) && _weiAmount > 0) {
+      (uint8 x, uint8 y) = plotIndexToPosition(_index);
+      emit Refund(x, y, _bidder, _weiAmount);
+    }
   }
   
   /**
@@ -167,8 +175,6 @@ contract LandPotAuction is Pausable {
     balances[_winner] = balances[_winner].add(_reward);
     emit Reward(_winner, _reward);
   }
-
-  // function rewardOtherWinners(address[] otherWinnders)
 
   /**
    * @dev Restarts the whole game with new world ID. World ID must be created with World contract first.
@@ -264,8 +270,8 @@ contract LandPotAuction is Pausable {
   function bid(uint8 _x, uint8 _y, uint8 _team, uint256 _newMaxBid) external payable whenNotPaused canBid {
     uint8 index = plotPositionToIndex(_x, _y);
     Plot storage plot = currentAuction.plots[index];
-    require(_newMaxBid >= plot.currentBid.add(1 finney), "Mix bit less than current bid."); // Must larger than current bid by at least 1 finney
-    require(_newMaxBid <= msg.value.add(balances[msg.sender]), "Max bid less than available fund.");
+    require(_newMaxBid >= plot.currentBid.add(1 finney), "Mix bid must be at least 1 finney more than the current bid."); // Must larger than current bid by at least 1 finney
+    require(_newMaxBid <= msg.value.add(balances[msg.sender]), "Max bid must be less than sending plus available fund.");
     if (msg.value < _newMaxBid) // Take some ethers from balance
       subBalance(msg.sender, _newMaxBid.sub(msg.value));
     if (_newMaxBid <= plot.maxBid) { // Failed to outbid current bidding, less than its max bid

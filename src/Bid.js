@@ -282,7 +282,7 @@ class Bid extends React.Component {
         if (isNaN(teamId)) {
             console.log("Bid failed, invalid bidTeam: {" + bidTeam + "}");
         }
-
+        // TODO: bid with remaining eth, e.g. player has 0.3 eth deposite and bid 0.7, he should only sending 0.4 eth
         this.state.landPotAuctionInstance.bid(squareChainIndex.row, squareChainIndex.column, teamId, this.state.web3.utils.toWei((bidPrice.toString()), 'ether'), { from: this.state.accounts[0], value: this.state.web3.utils.toWei((bidPrice.toString()), 'ether'), gasPrice: 20e9, gas: 130000 })
         .then((txhash) => {
           this.showTopAlert('Successfully placed bid, please wait for the transaction complete. <br />Transaction Hash: ' + this.getTransactionUrl(txhash.tx))
