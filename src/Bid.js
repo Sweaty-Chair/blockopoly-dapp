@@ -442,44 +442,46 @@ class Bid extends React.Component {
         }
         if (this.state.displayBid) {
             return (
-                <div className="bid-panel" id="land-info">
+                <div>
                     <MainNavbar
                         pool={currentBalance}
                         accountIcon={accountIcon}
                     />
-                    <LandInfo
-                        timeLeft={this.state.timeLeft}
-                        jackpot={jackpot}
-                        landDes={landDes}
-                        onCloseClick={() => this.toggleBidPage(false)}
-                    />
-                    <TopAlert
-                        content={this.state.topAlertContent}
-                        type={this.state.topAlertType}
-                        onCloseClick={() => this.showTopAlert()}
-                    />
-                    <Board
-                        selectId={selectedSquareId}
-                        squares={squares}
-                        onClick={(i) => this.onSquareClick(i)}
-                    />
-                    <Info
-                        teams={teams}
-                        selectId={selectedSquareId}
-                        bidPrice={bidPrice}
-                        updateBid={this.handleBidChange}
-                        onClick={() => this.onBidClick()}
-                        selectTeam={selectTeam}
-                        onSelectTeam={(teamId) => this.selectTeam(teamId)}
-                        currentSquarePrice={currentSquarePrice}
-                        scores={scores}
-                        bidderIcon={squareBidder}
-                    />
-                    <TeamScoreTable
-                        teams={scoreTable}
-                        selectTeam={this.state.team}
-                        onSelectTeam={(team) => this.selectTeam(team)}
-                    />
+                    <div className="bid-panel" id="land-info">
+                        <LandInfo
+                            timeLeft={this.state.timeLeft}
+                            jackpot={jackpot}
+                            landDes={landDes}
+                            onCloseClick={() => this.toggleBidPage(false)}
+                        />
+                        <TopAlert
+                            content={this.state.topAlertContent}
+                            type={this.state.topAlertType}
+                            onCloseClick={() => this.showTopAlert()}
+                        />
+                        <Board
+                            selectId={selectedSquareId}
+                            squares={squares}
+                            onClick={(i) => this.onSquareClick(i)}
+                        />
+                        <Info
+                            teams={teams}
+                            selectId={selectedSquareId}
+                            bidPrice={bidPrice}
+                            updateBid={this.handleBidChange}
+                            onClick={() => this.onBidClick()}
+                            selectTeam={selectTeam}
+                            onSelectTeam={(teamId) => this.selectTeam(teamId)}
+                            currentSquarePrice={currentSquarePrice}
+                            scores={scores}
+                            bidderIcon={squareBidder}
+                        />
+                        <TeamScoreTable
+                            teams={scoreTable}
+                            selectTeam={this.state.team}
+                            onSelectTeam={(team) => this.selectTeam(team)}
+                        />
+                    </div>
                 </div>
             );
         } else {

@@ -16,7 +16,7 @@
   .bid-table {
   max-width:500px;
   margin:auto;
-  padding:5px;
+  padding:15px;
   }
 
   img.bidder-icon {
@@ -35,11 +35,18 @@
   }
 
   .bid-panel {
-    position: fixed;
-    width: 395px;
+    float: right;
+    width: 35%;
+    max-width: 385px;
+    min-width: 365px;
     margin-top:62px;
-    height: 100%;
+    padding-bottom: 58px;
     right: 0px;
+    top: 0;
+    bottom:0;
+    position:fixed;
+    overflow: auto;
+    
     background-color:rgba(0,0,0,0.87);
     border-radius: 5px;
   }
@@ -66,7 +73,7 @@
 
   .current-bid-text {
     color: #960f0f;
-    margin-left: 10px;
+    margin-left: 20px;
   }
   
   .dark {
