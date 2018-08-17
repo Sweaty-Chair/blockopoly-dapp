@@ -4,9 +4,18 @@ import TeamScore from './TeamScore'
 
 class TeamScoreTable extends React.Component {
     render () {
+        let teams = this.props.teams;
         let rows = [];
-        for (let i = 0; i < this.props.teams.length; ++i) {
-            const element = this.props.teams[i];
+
+        if (teams) {
+            teams.sort(function(a, b) {
+                if (a.score > b.score) return -1;
+                if (a.score < b.score) return 1;
+                return 0;
+            });
+        }
+        for (let i = 0; i < teams.length; ++i) {
+            const element = teams[i];
             rows.push(
                 <TeamScore 
                     key={element.team}
