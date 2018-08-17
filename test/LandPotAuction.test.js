@@ -266,6 +266,10 @@ contract('LandPotAuction', (accounts) => {
         const landOwner = await this.bidLand.ownerOfLand(0, 1, 1)
         landOwner.should.eq(bidder3)
       })
+      it('land (1,1) has correct bid price', async () => {
+        const bidPrice = await this.bidLand.biddingPriceOfLand(0, 1, 1)
+        bidPrice.should.be.bignumber.equal(ether(1.6))
+      })
     })
   })
 
