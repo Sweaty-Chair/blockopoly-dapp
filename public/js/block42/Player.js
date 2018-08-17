@@ -223,7 +223,7 @@ Player.prototype.Listen = function() {
 		function(e) {
 			if (!this.isActive) {return;}
 			console.log("click");
-
+			SetLand(outlinePass.selectedObjects[0].userData.land);
 			//this is the highlighted obj
 			//console.log(outlinePass.selectedObjects[0].userData);
 			ShowInfoBox(outlinePass.selectedObjects[0].userData.land);

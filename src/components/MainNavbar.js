@@ -2,6 +2,7 @@ import React from 'react'
 import 'bootstrap'
 import 'bootstrap/dist/css/bootstrap.min.css'
 
+import Navbar from './Navbar'
 
 class MainNavbar extends React.Component {
     render() {
@@ -40,6 +41,10 @@ class MainNavbar extends React.Component {
                             </li>
                         </ul>
                     </div>
+                    <Navbar
+                        pool={this.props.pool}
+                        accountIcon={this.props.accountIcon}
+                    />
                 </nav>
             </div>
         );

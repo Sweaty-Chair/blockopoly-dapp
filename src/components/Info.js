@@ -32,13 +32,14 @@ class Info extends React.Component {
                         <img className="vertical-icon" src='position.png' alt="Position"/>
                         <span className="position-text"> ({row}, </span>
                         <span className="position-text">{column})</span>
+                        <span className="current-bid-text">{currentSquareInfo}</span>
+                        <img className={bidderIconClassName} src={this.props.bidderIcon} alt='User' />
                     </div>
                     <div>
                         <input className="bid-input" type="number" placeholder="input price..." value={bidPrice} onChange={this.handleBidChange}>
                         </input>
                         <button className="bid-button" onClick={this.props.onClick}>Bid</button>
-                        <span className="current-bid-text">{currentSquareInfo}</span>
-                        <img className={bidderIconClassName} src={this.props.bidderIcon} alt='User' />
+
                     </div>
                 </div>
             </div>

@@ -3,11 +3,12 @@ import LandPotAuctionContract from '../build/contracts/LandPotAuction.json'
 import getWeb3 from './utils/getWeb3'
 import makeBlockie from 'ethereum-blockies-base64'
 
-import Navbar from './components/Navbar.js'
+import MainNavbar from './components/MainNavbar.js'
 import TopAlert from './components/TopAlert.js'
 import Board from './components/Board.js'
 import TeamScoreTable from './components/TeamScoreTable'
 import Info from './components/Info'
+import LandInfo from './components/LandInfo'
 
 import './css/oswald.css'
 import './css/open-sans.css'
@@ -31,6 +32,10 @@ class Bid extends React.Component {
         this.updateScores = this.updateScores.bind(this);
         this.checkAccounts = this.checkAccounts.bind(this);
         this.updateContractDetail = this.updateContractDetail.bind(this);
+        this.showTopAlert = this.showTopAlert.bind(this);
+        this.hideTopAlert = this.hideTopAlert.bind(this);
+        this.toggleBidPage = this.toggleBidPage.bind(this);
+        this.setLand = this.setLand.bind(this);
         this.state = {
             web3: null,
             teams: ["team-A", "team-B", "team-C", "team-D"],
@@ -47,6 +52,8 @@ class Bid extends React.Component {
             balanceOfMe: "",
             topAlertContent: "",
             topAlertType: "",
+            displayBid: false,
+            currentLand: null,
         }
     }
     
@@ -72,7 +79,9 @@ class Bid extends React.Component {
         this.bidCountdown();
         var interval = setInterval(this.bidCountdown, 1000);
         this.setState({countdownInterval: interval});
+        window.SetLand = this.setLand;
     }
+
 
     componentWillUnmount() {
         clearInterval(this.state.countdownInterval);
@@ -171,11 +180,39 @@ class Bid extends React.Component {
             }
         })
     }
+    
+    setLand(land) {
+        this.setState({
+            currentLand: land,
+        }, () => {
+            if (land) {
+                this.toggleBidPage(true);
+            } else {
+                this.toggleBidPage(false);
+            }
+        })
+    }
+
+    toggleBidPage(toggle) {
+        this.setState({
+            displayBid: toggle,
+        })
+    }
 
     showTopAlert(context, type) {
+        if (this.topAlertTimeout) {
+            clearTimeout(this.topAlertTimeout);
+        }
         this.setState({
             topAlertContent: context,
             topAlertType: type,
+        })
+        this.topAlertTimeout = setTimeout(this.hideTopAlert, 5000);
+    }
+
+    hideTopAlert() {
+        this.setState({
+            topAlertContent: null,
         })
     }
 
@@ -231,8 +268,8 @@ class Bid extends React.Component {
         if (isNaN(squareId) || squareId < 0 || squareId > 41) {
             return null;
         }
-        let row = parseInt(squareId / BOARD_COLUMNS, 10) - 3;
-        let column = parseInt(squareId % BOARD_COLUMNS, 10) - 3;
+        let row = parseInt(squareId / BOARD_COLUMNS, 10) + 1;
+        let column = parseInt(squareId % BOARD_COLUMNS, 10) + 1;
         return {row: row, column: column};
     }
 
@@ -354,6 +391,19 @@ class Bid extends React.Component {
         }
     }
 
+    getJackpot() {
+        let sum = parseFloat(0);
+        for (let i = 0; i < this.state.board.squares.length; ++i) {
+            let currentSquare = this.state.board.squares[i];
+
+            if (currentSquare && currentSquare.bid > 0) {
+                sum += parseFloat(this.state.board.squares[i].bid);
+            }
+        }
+        sum = sum.toFixed(3) + " ETH";
+        return sum;
+    }
+  
     render() {
         const selectedSquareId = this.state.selectedSquare;
         const selectTeam = this.state.team;
@@ -364,6 +414,11 @@ class Bid extends React.Component {
         const currentSquare = squares[selectedSquareId];
         let squareBidder = "";
         let currentSquarePrice;
+        let landDes = "CITY #42 - (E:4)";
+        if (this.state.currentLand) {
+            landDes = this.state.currentLand._description +"("+this.state.currentLand._x+","+this.state.currentLand._y + ")"
+        }
+        const jackpot = this.getJackpot();
         if (currentSquare) {
             currentSquarePrice = currentSquare.bid;
             if (currentSquare.bidder) {
@@ -385,42 +440,59 @@ class Bid extends React.Component {
             let row = { team: teams[i], teamTag: teamTag, score: scores[i] }
             scoreTable.push(row);
         }
-        return (
-            <div className="bid-panel" id="land-info">
-                <Navbar
+        if (this.state.displayBid) {
+            return (
+                <div>
+                    <MainNavbar
+                        pool={currentBalance}
+                        accountIcon={accountIcon}
+                    />
+                    <div className="bid-panel" id="land-info">
+                        <LandInfo
+                            timeLeft={this.state.timeLeft}
+                            jackpot={jackpot}
+                            landDes={landDes}
+                            onCloseClick={() => this.toggleBidPage(false)}
+                        />
+                        <TopAlert
+                            content={this.state.topAlertContent}
+                            type={this.state.topAlertType}
+                            onCloseClick={() => this.showTopAlert()}
+                        />
+                        <Board
+                            selectId={selectedSquareId}
+                            squares={squares}
+                            onClick={(i) => this.onSquareClick(i)}
+                        />
+                        <Info
+                            teams={teams}
+                            selectId={selectedSquareId}
+                            bidPrice={bidPrice}
+                            updateBid={this.handleBidChange}
+                            onClick={() => this.onBidClick()}
+                            selectTeam={selectTeam}
+                            onSelectTeam={(teamId) => this.selectTeam(teamId)}
+                            currentSquarePrice={currentSquarePrice}
+                            scores={scores}
+                            bidderIcon={squareBidder}
+                        />
+                        <TeamScoreTable
+                            teams={scoreTable}
+                            selectTeam={this.state.team}
+                            onSelectTeam={(team) => this.selectTeam(team)}
+                        />
+                    </div>
+                </div>
+            );
+        } else {
+            return (
+                <MainNavbar
                     pool={currentBalance}
                     accountIcon={accountIcon}
                 />
-                <TopAlert
-                    content={this.state.topAlertContent}
-                    type={this.state.topAlertType}
-                    onCloseClick={() => this.showTopAlert()}
-                />
-                <Board
-                    selectId={selectedSquareId}
-                    squares={squares}
-                    onClick={(i) => this.onSquareClick(i)}
-                    timeLeft={this.state.timeLeft}
-                />
-                <Info
-                    teams={teams}
-                    selectId={selectedSquareId}
-                    bidPrice={bidPrice}
-                    updateBid={this.handleBidChange}
-                    onClick={() => this.onBidClick()}
-                    selectTeam={selectTeam}
-                    onSelectTeam={(teamId) => this.selectTeam(teamId)}
-                    currentSquarePrice={currentSquarePrice}
-                    scores={scores}
-                    bidderIcon={squareBidder}
-                />
-                <TeamScoreTable 
-                    teams={scoreTable}
-                    selectTeam={this.state.team}
-                    onSelectTeam={(team) => this.selectTeam(team)}
-                />
-            </div>
-        );
+            );
+        }
+        
     }
 }
 
