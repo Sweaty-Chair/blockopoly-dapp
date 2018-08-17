@@ -53,6 +53,7 @@ class Bid extends React.Component {
             topAlertContent: "",
             topAlertType: "",
             displayBid: false,
+            currentLand: null,
         }
     }
     
@@ -181,11 +182,15 @@ class Bid extends React.Component {
     }
     
     setLand(land) {
-        if (land) {
-            this.toggleBidPage(true);
-        } else {
-            this.toggleBidPage(false);
-        }
+        this.setState({
+            currentLand: land,
+        }, () => {
+            if (land) {
+                this.toggleBidPage(true);
+            } else {
+                this.toggleBidPage(false);
+            }
+        })
     }
 
     toggleBidPage(toggle) {
@@ -409,6 +414,10 @@ class Bid extends React.Component {
         const currentSquare = squares[selectedSquareId];
         let squareBidder = "";
         let currentSquarePrice;
+        let landDes = "CITY #42 - (E:4)";
+        if (this.state.currentLand) {
+            landDes = this.state.currentLand._description +"("+this.state.currentLand._x+","+this.state.currentLand._y + ")"
+        }
         const jackpot = this.getJackpot();
         if (currentSquare) {
             currentSquarePrice = currentSquare.bid;
@@ -441,6 +450,7 @@ class Bid extends React.Component {
                     <LandInfo
                         timeLeft={this.state.timeLeft}
                         jackpot={jackpot}
+                        landDes={landDes}
                         onCloseClick={() => this.toggleBidPage(false)}
                     />
                     <TopAlert

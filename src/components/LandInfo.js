@@ -9,7 +9,7 @@ class LandInfo extends React.Component {
                         <span aria-hidden="true">&times;</span>
                     </button>
                     <div>
-                        <p>CITY #42 - (E:4)</p>
+                        <p>{this.props.landDes}</p>
                     </div>
                     <div>
                         <p id="time-countdown">{this.props.timeLeft}</p>
