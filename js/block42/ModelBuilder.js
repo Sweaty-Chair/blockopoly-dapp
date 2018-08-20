@@ -3,7 +3,6 @@ class ModelBuilder
 
 	static buildFromVox(lands)
 	{
-	console.log("buildFromVox");
 		var citySizeX = 10;
 		var citySizeY = 10;
 		Index.worldLoaded = false;
@@ -16,7 +15,6 @@ class ModelBuilder
 		}
 		ModelBuilder.buildStreet(citySizeX, citySizeY);
 	}
-
 
 	// static buildFromData(lands)
 	// {
@@ -195,7 +193,7 @@ class ModelBuilder
 
 	static buildStreet(citySizeX, citySizeY)
 	{
-		console.log("buildStreet"+citySizeX);
+		// console.log("buildStreet"+citySizeX);
 		//121 street
 		var hStPoslist = [];
 		var hStId = 0;

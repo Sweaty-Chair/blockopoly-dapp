@@ -50,7 +50,7 @@ class ObjLoaderUtils {
 	static SpawnObjFromVox(land, onLoad){
 		ModelBuilder.loadingCount++;
 		var objPosition = { x:land._x, y:0, z:land._y };
-		console.log(land);
+		// console.log(land);
 		if(land._description == "Land+4+sale_Big" || land._description == "Apartment+combine")
 			ObjLoaderUtils.SpawnObjFromVox2('./assets/'+land._description +".vox", objPosition, land,onLoad);
 		else if(land._description.endsWith('_2')){
@@ -67,7 +67,6 @@ class ObjLoaderUtils {
 	{
 		var parser = new vox.Parser();
 		parser.parse(objUrl).then(function(voxelData) {
-
 
 			var size = voxelData.size;
 			var points = new Int32Array(size.x * size.y * size.z); 
