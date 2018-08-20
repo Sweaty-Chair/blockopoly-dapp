@@ -188,7 +188,7 @@ class Bid extends React.Component {
             }
         })
         // Withdraw event
-        this.state.landPotAuctionInstance.Withdrawn({ block: 'latest' }).watch((error, result) => {
+        this.state.landPotAuctionInstance.Withdraw({ block: 'latest' }).watch((error, result) => {
             if (!error) {
                 this.state.landPotAuctionInstance.balances(this.state.accounts[0]).then((result) => {
                     this.setState({ balanceOfMe: this.state.web3.utils.fromWei(result.toString()) })
