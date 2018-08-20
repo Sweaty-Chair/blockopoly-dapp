@@ -92,6 +92,14 @@ class Bid extends React.Component {
         this.state.web3.eth.net.getId().then((networkId) => {
             // console.log(networkId)
             this.setState({ netId: networkId })
+            
+            // Show test net warning.
+            if (this.state.netId === 3) {
+                // $('#no-mainnet-alert-text').html("Currently in <b>Ropsten Test Network</b>. Change to <b>Main Ethereum Network</b> for valid transactions.");
+            } else {
+                // $('#no-mainnet-alert-text').html("You're not connected! Open MetaMask and make sure you are on the Main Ethereum Network.");
+            }
+
         })
 
         // Check accounts changed every 5 seconds.
@@ -144,15 +152,14 @@ class Bid extends React.Component {
             this.setState({
                 board: { squares: newSquares },
             }, () => { this.updateScores() })
-            console.log(result)
         })
+        // Gets the auction ending time.
         this.state.landPotAuctionInstance.getEndingTime().then((result) => {
             const endingDate = new Date(0);
             endingDate.setUTCSeconds(result.toNumber())
             bidEndTime = endingDate
-            console.log(endingDate);
         })
-        // Gets balance of me.
+        // Gets ETH balance of me.
         this.state.landPotAuctionInstance.balances(this.state.accounts[0]).then((result) => {
             this.setState({ balanceOfMe: this.state.web3.utils.fromWei(result.toString()) })
         })
