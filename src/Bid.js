@@ -35,6 +35,7 @@ class Bid extends React.Component {
         this.showTopAlert = this.showTopAlert.bind(this);
         this.hideTopAlert = this.hideTopAlert.bind(this);
         this.toggleBidPage = this.toggleBidPage.bind(this);
+        this.withdrawBalance = this.withdrawBalance.bind(this);
         this.setLand = this.setLand.bind(this);
         this.state = {
             web3: null,
@@ -179,6 +180,20 @@ class Bid extends React.Component {
                 console.log(error)
             }
         })
+        // Withdraw event
+        this.state.landPotAuctionInstance.Withdrawn({ block: 'latest' }).watch((error, result) => {
+            if (!error) {
+                this.state.landPotAuctionInstance.balances(this.state.accounts[0]).then((result) => {
+                    this.setState({ balanceOfMe: this.state.web3.utils.fromWei(result.toString()) })
+                })
+            } else {
+                console.log(error)
+            }
+        })
+    }
+
+    withdrawBalance() {
+        this.state.landPotAuctionInstance.withdraw({ from: this.state.accounts[0], gasPrice: 20e9, gas: 130000} );
     }
     
     setLand(land) {
@@ -452,6 +467,7 @@ class Bid extends React.Component {
                     <MainNavbar
                         pool={currentBalance}
                         accountIcon={accountIcon}
+                        onWithdrawClick={() => this.withdrawBalance()}
                     />
                     <div className="bid-panel" id="land-info">
                         <LandInfo

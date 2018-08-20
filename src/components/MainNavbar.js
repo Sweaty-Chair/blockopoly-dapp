@@ -44,6 +44,7 @@ class MainNavbar extends React.Component {
                     <Navbar
                         pool={this.props.pool}
                         accountIcon={this.props.accountIcon}
+                        onWithdrawClick={this.props.onWithdrawClick}
                     />
                 </nav>
             </div>
