@@ -40,7 +40,7 @@ contract LandPotAuction is Pausable {
   event Bid(uint8 x, uint8 y, address indexed oldBidder, address indexed bidder, uint8 team, uint256 currentBid);
   event Refund(uint8 x, uint8 y, address indexed bidder, uint256 weiAmount);
   event Reward(address indexed bidder, uint256 bidderReward);
-  event Withdrawn(address indexed payee, uint256 weiAmount);
+  event Withdraw(address indexed payee, uint256 weiAmount);
 
   uint8 constant PLOT_WIDTH = 7; // 7x6 plots
   uint8 constant PLOT_HEIGHT = 6;
@@ -344,7 +344,7 @@ contract LandPotAuction is Pausable {
     uint256 weiAmount = balances[msg.sender];
     emptyMyBalance();
     msg.sender.transfer(weiAmount);
-    emit Withdrawn(msg.sender, weiAmount);
+    emit Withdraw(msg.sender, weiAmount);
   }
   
   /**

@@ -9,6 +9,6 @@ function ShowInfoBox(land)
 		$("#land-info").show();
 		$("#plotname").text(land._description);
 		$("#fileName").val(land._description +"_x"+land._x+"_y"+land._y);
-		console.log($("#fileName"));
+		// console.log($("#fileName"));
 	}
 }

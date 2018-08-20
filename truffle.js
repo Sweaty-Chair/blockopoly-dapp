@@ -16,7 +16,7 @@ module.exports = {
     ropsten: {
       provider: () => new HDWalletProvider(process.env.MNENOMIC, "https://ropsten.infura.io/v3/" + process.env.INFURA_API_KEY),
       network_id: 3,
-      gas: 6500000,
+      gas: 4612388,
       gasPrice: 21
     },
     rinkeby: {
