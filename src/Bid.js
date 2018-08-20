@@ -44,7 +44,7 @@ class Bid extends React.Component {
             team: '',
             selectedSquare: -1,
             bidPrice: '',
-            timeLeft: 'Action Closed',
+            timeLeft: 'Auction Closed',
             countdownInterval: null,
             landPotAuctionInstance: null,
             accounts: [],
@@ -244,7 +244,7 @@ class Bid extends React.Component {
         const t = bidEndTime.getTime() - new Date().getTime();
         let info;
         if (t < 0) {
-            info = "Action Closed";
+            info = "Auction Closed";
         } else {
             info = "Ends in: " + Math.floor(t / (1000 * 60 * 60 * 24)) + "d " + Math.floor((t % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)) + "h " + Math.floor((t % (1000 * 60 * 60)) / (1000 * 60)) + "m " + Math.floor((t % (1000 * 60)) / 1000) + "s";
         }
