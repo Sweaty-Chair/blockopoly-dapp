@@ -3,8 +3,8 @@ class ModelBuilder
 
 	static buildFromVox(lands)
 	{
-		var citySizeX = 10;
-		var citySizeY = 10;
+		var citySizeX = 7;
+		var citySizeY = 6;
 		Index.worldLoaded = false;
 		
 		ModelBuilder.loadingCount = 0;
@@ -31,7 +31,6 @@ class ModelBuilder
 
 	static build()
 	{
-	console.log("build");
 		if(typeof data  === 'undefined')
 		{
 		    var data = [];
@@ -193,17 +192,16 @@ class ModelBuilder
 
 	static buildStreet(citySizeX, citySizeY)
 	{
-		// console.log("buildStreet"+citySizeX);
-		//121 street
+		// Vertical streets
+
 		var hStPoslist = [];
 		var hStId = 0;
 
 		for (var xi = 0; xi < citySizeX; xi++) {
-			for (var yi = 0; yi < citySizeY + 1; yi++) {
+			for (var yi = 0; yi < citySizeY + 2; yi++) {
 			
-			//record position
-			var pos = [xi * 149 + 31.5, yi * 149 - 43];
-			hStPoslist.push(pos);
+			// record position
+			hStPoslist.push([xi * 149 + 149 + 31.5, yi * 149 + 149 - 43]);
 
 			var objPosition = new THREE.Vector3(
 				hStPoslist[hStId][0],
@@ -212,7 +210,7 @@ class ModelBuilder
 			);
 
 			ObjLoaderUtils.SpawnObjAtPosition(
-				"assets/Road.obj",
+				"assets/models/road.obj",
 				objPosition,
 				function(object) {
 				scene.add(object);
@@ -225,52 +223,52 @@ class ModelBuilder
 		var vStPoslist = [];
 		var vStId = 0;
 
-		//121 street
+		// Horizontal streets
+		for (var xi = 0; xi < citySizeX + 1; xi++) {
+			for (var yi = 0; yi < citySizeY + 1; yi++) {
+			//record position
+			var pos = [xi * 149 + 149 - 43, yi * 149 + 149 + 31.5];
+			vStPoslist.push(pos);
 
-			for (var xi = 0; xi < citySizeX + 1; xi++) {
-				for (var yi = 0; yi < citySizeY; yi++) {
-				//record position
-				var pos = [xi * 149 - 43, yi * 149 + 31.5];
-				vStPoslist.push(pos);
+			var objPosition = new THREE.Vector3(
+				vStPoslist[vStId][0],
+				-1,
+				vStPoslist[vStId][1]
+			);
 
-				var objPosition = new THREE.Vector3(
-					vStPoslist[vStId][0],
-					-1,
-					vStPoslist[vStId][1]
-				);
-
-				ObjLoaderUtils.SpawnObjAtPosition("assets/Road.obj",objPosition,function(object) {
-					object.rotateY(Math.PI / 2);
-					scene.add(object);
-					}
-				);
-				vStId++;
+			ObjLoaderUtils.SpawnObjAtPosition("assets/Road.obj",objPosition,function(object) {
+				object.rotateY(Math.PI / 2);
+				scene.add(object);
 				}
+			);
+			vStId++;
 			}
+		}
 
-			var cPoslist = [];
-			var cId = 0;
-			for (var xi = 0; xi < citySizeX + 1; xi++) {
-				for (var yi = 0; yi < citySizeY + 1; yi++) {
-				//record position
-				var pos = [xi * 149 - 43, yi * 149 - 43];
-				cPoslist.push(pos);
+		// Street intersections
+		var cPoslist = [];
+		var cId = 0;
+		for (var xi = 0; xi < citySizeX + 1; xi++) {
+			for (var yi = 0; yi < citySizeY + 2; yi++) {
+			var pos = [xi * 149 + 149 - 43, yi * 149 + 149 - 43];
+			cPoslist.push(pos);
 
-				var objPosition = new THREE.Vector3(
-					cPoslist[cId][0],
-					-1,
-					cPoslist[cId][1]
-				);
+			var objPosition = new THREE.Vector3(
+				cPoslist[cId][0],
+				-1,
+				cPoslist[cId][1]
+			);
 
-				ObjLoaderUtils.SpawnObjAtPosition("assets/Road2.obj",objPosition,function(object) {
+			ObjLoaderUtils.SpawnObjAtPosition("assets/Road2.obj",objPosition,function(object) {
 
-					scene.add(object);
-					}
-				);
-				cId++;
+				scene.add(object);
 				}
+			);
+			cId++;
 			}
+		}
 	}
+
 }
 
 

@@ -5,36 +5,40 @@
 class Land
 {
     
-    constructor(x, y, w, h, owned, sale, description) {
-        this._x = x;
-        this._y = y;
-        this._w = w;
-        this._h = h;
-        this._owned = owned;
-        this._sale = sale;
-        this._description = description;
+    constructor(tokenId, x, y, owner, name, description) {
+        this._tokenId = tokenId
+        this._x = x
+        this._y = y
+        this._owner = owner
+        this._name = name
+        this._description = description
     }
 
     static init()
     {
         var fs = require('fs');
         var data = fs.readFileSync('js/block42/lands.json');
-        console.log(data);
     }
 
     // Load the lands info from JSON, this will be replaced by Blockchain call later
-    static init(landsJson, myLandsJson)
+    static init(landsJson)
 	{
         landsJson.forEach(jsonElement => {
-            var land = new Land(jsonElement.x, jsonElement.y, jsonElement.w, jsonElement.h, jsonElement.owned, jsonElement.sale, jsonElement.description);
+            var land = new Land(jsonElement.tokenId, jsonElement.x, jsonElement.y, jsonElement.owner, jsonElement.name, jsonElement.description);
             Land.lands.push(land);
             Land.landsDict[[land._x, land._y]] = land;
         });
-        myLandsJson.forEach(jsonElement => {
-            if (Land.landsDict[[jsonElement.x, jsonElement.y]] !== undefined)
-                Land.myLands.push(Land.landsDict[[jsonElement.x, jsonElement.y]]);
-        });
+        // Add empty lands
+        for (var i = -3; i <= 3; i++) {
+            for (var j = -3; j <= 3; j++) {
+                if (Land.landsDict[[i, j]] === undefined)
+                    Land.lands.push(new Land(0, i, j, "", "", ""));
+            }
+        }
+        console.log(Land.lands)
     }
+
+
 
     /* Lands info */
 
@@ -55,11 +59,6 @@ class Land
     }
 
     /* Buy and sell */
-
-    static buyLand(land)
-    {
-
-    }
 
     /* My lands */
 

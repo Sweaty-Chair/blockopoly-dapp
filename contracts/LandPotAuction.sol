@@ -365,6 +365,13 @@ contract LandPotAuction is Pausable {
   }
 
   /**
+   * @dev Deposits ETH into jackpot, for testing and increase final rewards, owner only.
+   */
+  function depositJackpot() external payable {
+    jackpot = jackpot.add(msg.value);
+  }
+
+  /**
    * @dev Withdraws the earned ETH while keeping enough for jackpot and outbid balances, owner only.
    */
   function withdrawEarning() external onlyOwner {
@@ -373,7 +380,7 @@ contract LandPotAuction is Pausable {
   }
 
   /**
-   * @dev Withdraws the all ETH, owner only, for testing ONLY.
+   * @dev Withdraws the all ETH for testing ONLY, owner only.
    */
   function withdrawAll() external onlyOwner {
     msg.sender.transfer(address(this).balance);

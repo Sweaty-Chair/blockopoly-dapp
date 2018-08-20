@@ -13,7 +13,7 @@ class ObjLoaderUtils {
 	}
 	*/
 
-    static SpawnObjAtPosition(objUrl, position, onLoad){
+    static SpawnObjAtPosition(objPath, position, onLoad){
 
 		ModelBuilder.loadingCount++;
         //Create an instance of our toon material to apply to our object
@@ -31,7 +31,7 @@ class ObjLoaderUtils {
 
         //Create our Mesh and add to scene with the newly created material
         new THREE.OBJLoader()
-            .load(objUrl, function (object) {
+            .load(objPath, function (object) {
                 object.traverse(function (child) {   //Go through each child and find our mesh component, and change our material
                     if (child instanceof THREE.Mesh) {
                         child.material = objMaterial;
@@ -49,36 +49,33 @@ class ObjLoaderUtils {
 
 	static SpawnObjFromVox(land, onLoad){
 		ModelBuilder.loadingCount++;
-		var objPosition = { x:land._x, y:0, z:land._y };
-		// console.log(land);
-		if(land._description == "Land+4+sale_Big" || land._description == "Apartment+combine")
-			ObjLoaderUtils.SpawnObjFromVox2('./assets/'+land._description +".vox", objPosition, land,onLoad);
-		else if(land._description.endsWith('_2')){
-			objPosition.y=126;
-			ObjLoaderUtils.SpawnObjFromVox2('./assets/'+land._description +"_x"+land._x+"_y"+land._y+".vox", objPosition, land,onLoad);
-		}
+		if (land._owner === undefined || land._owner == "")
+			ObjLoaderUtils.SpawnObjFromVox2('./assets/models/land_empty.vox', land,onLoad);
+		// else if(land._description.endsWith('_2')){
+		// 	objPosition.y=126;
+		// 	ObjLoaderUtils.SpawnObjFromVox2('./assets/'+land._description +"_x"+land._x+"_y"+land._y+".vox", objPosition, land,onLoad);
+		// }
 		else
-			ObjLoaderUtils.SpawnObjFromVox2('./assets/'+land._description +"_x"+land._x+"_y"+land._y+".vox", objPosition, land,onLoad);
-		
+			ObjLoaderUtils.SpawnObjFromVox2('./assets/models/' + land._tokenId + ".vox", land, onLoad);
 	}
 
+	static SpawnEmptyLandObjFromVox(land, onLoad){
+		ObjLoaderUtils.SpawnObjFromVox2('./assets/models/land_empty.vox', land, onLoad);
+	}
 	
-	static SpawnObjFromVox2(objUrl, position, land,onLoad)
+	static SpawnObjFromVox2(objPath, land, onLoad)
 	{
 		var parser = new vox.Parser();
-		parser.parse(objUrl).then(function(voxelData) {
+		parser.parse(objPath).then((voxelData) => {
 
 			var size = voxelData.size;
 			var points = new Int32Array(size.x * size.y * size.z); 
-			//console.log(points);
 			for (var i = voxelData.voxels.length - 1; i >= 0; i--){
 				var v = voxelData.voxels[i];
 				points[(size.x -v.x) + v.y *size.x * size.z + v.z*size.y ] = v.colorIndex;
 			}
 
-			//console.log([size.x, size.y, size.z]);
 			var result = MonotoneMesh(points, [size.x, size.z, size.y]);
-					//console.log(result);
 			var geometry = new THREE.Geometry();		
 			geometry.vertices.length = 0;
 			geometry.faces.length = 0;
@@ -88,7 +85,6 @@ class ObjLoaderUtils {
 				var q = result.vertices[i];
 				geometry.vertices.push(new THREE.Vector3(q[0], q[1], q[2]));
 			}
-			//console.log(voxelData.palette[result.faces[0][3]]);
 			for(var i=0; i<result.faces.length; ++i) 
 			{
 				var q = result.faces[i];
@@ -105,8 +101,6 @@ class ObjLoaderUtils {
 			geometry.elementsNeedUpdate = true;
 			geometry.normalsNeedUpdate = true;
       
-
-      
 			//Create surface mesh
 			var material	= new THREE.MeshLambertMaterial({
 				vertexColors: true
@@ -115,10 +109,9 @@ class ObjLoaderUtils {
 			surfacemesh.doubleSided = true;
 
 			scene.add( surfacemesh );
-			surfacemesh.position.set( land._x-31.5, position.y, land._y-31.5 );
+			surfacemesh.position.set( land._x * 149 + 596 - 31.5, 0, land._y * 149 + 596 - 31.5 ); // Hard cord position and offset
 			surfacemesh.userData.land = land;
 			ModelBuilder.loadingCount--;
-
 
 			/*
 			geometry.computeBoundingBox();

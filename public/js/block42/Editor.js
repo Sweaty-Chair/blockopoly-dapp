@@ -69,7 +69,7 @@ class Editor
 			
 		//Shibuya2    chr_rain   Road X
 		var parser = new vox.Parser();
-		parser.parse("assets/"+fileName+".vox").then(function(voxelData) {
+		parser.parse("assets/models/"+fileName+".vox").then(function(voxelData) {
 			console.log(voxelData);
 			myVoxelData = voxelData;
 
