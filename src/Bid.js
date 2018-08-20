@@ -257,6 +257,12 @@ class Bid extends React.Component {
         this.setState({
             selectedSquare: i,
         })
+        let selectedSquare = this.state.board.squares[i];
+        if (selectedSquare && selectedSquare.bid) {
+            this.handleBidChange(parseFloat(selectedSquare.bid) + 0.01);
+        } else {
+            this.handleBidChange(0.01);
+        }
     }
 
     selectTeam(team) {
