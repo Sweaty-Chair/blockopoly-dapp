@@ -3,7 +3,6 @@ import 'bootstrap';
 import React from 'react'
 import ReactDOM from 'react-dom'
 import Bid from './Bid'
-import MainNavbar from './components/MainNavbar'
 import Footer from './components/Footer'
 import PriceScroll from './components/PriceScroll'
 // import App from './App'

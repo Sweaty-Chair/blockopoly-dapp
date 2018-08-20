@@ -16,6 +16,12 @@ class TeamScoreTable extends React.Component {
         }
         for (let i = 0; i < teams.length; ++i) {
             const element = teams[i];
+            let teamBidders = null;
+            if (this.props.teamBidders) {
+                teamBidders = this.props.teamBidders.find(function(b){
+                    return b.name === element.team;
+                })
+            }
             rows.push(
                 <TeamScore 
                     key={element.team}
@@ -23,6 +29,7 @@ class TeamScoreTable extends React.Component {
                     score={element.score}
                     teamTag={element.teamTag}
                     selectTeam={this.props.selectTeam}
+                    bidders={teamBidders.bidders}
                     onClick={() => this.props.onSelectTeam(element.team)}
                 />
             );

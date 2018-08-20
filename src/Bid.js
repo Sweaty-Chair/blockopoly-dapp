@@ -35,20 +35,22 @@ class Bid extends React.Component {
         this.showTopAlert = this.showTopAlert.bind(this);
         this.hideTopAlert = this.hideTopAlert.bind(this);
         this.toggleBidPage = this.toggleBidPage.bind(this);
+        this.withdrawBalance = this.withdrawBalance.bind(this);
         this.setLand = this.setLand.bind(this);
         this.state = {
+            // user auth
             web3: null,
+            accounts: [],
+            landPotAuctionInstance: null,
+            // game content
+            board: { squares: Array(42).fill(null) },
             teams: ["team-A", "team-B", "team-C", "team-D"],
             scores: [],
-            board: { squares: Array(42).fill(null) },
-            team: '',
             selectedSquare: -1,
             bidPrice: '',
+            team: '',
             timeLeft: 'Auction Closed',
             countdownInterval: null,
-            landPotAuctionInstance: null,
-            accounts: [],
-            totalBalance: "",
             balanceOfMe: "",
             topAlertContent: "",
             topAlertType: "",
@@ -186,6 +188,20 @@ class Bid extends React.Component {
                 console.log(error)
             }
         })
+        // Withdraw event
+        this.state.landPotAuctionInstance.Withdraw({ block: 'latest' }).watch((error, result) => {
+            if (!error) {
+                this.state.landPotAuctionInstance.balances(this.state.accounts[0]).then((result) => {
+                    this.setState({ balanceOfMe: this.state.web3.utils.fromWei(result.toString()) })
+                })
+            } else {
+                console.log(error)
+            }
+        })
+    }
+
+    withdrawBalance() {
+        this.state.landPotAuctionInstance.withdraw({ from: this.state.accounts[0], gasPrice: 20e9, gas: 130000} );
     }
     
     setLand(land) {
@@ -369,6 +385,36 @@ class Bid extends React.Component {
         });
     }
 
+    getTeamBidders() {
+        let bidderInfo = [];
+        for (let i = 0; i < this.state.teams.length; ++i) {
+            let team = {};
+            team.name = this.state.teams[i];
+            team.bidders = [];
+            bidderInfo.push(team);
+        }
+        for (let i = 0; i < this.state.board.squares.length; ++i) {
+            let currentSquare = this.state.board.squares[i];
+            if (currentSquare && currentSquare.bidder) {
+                let info = bidderInfo.find(function(element){
+                    return element.name === currentSquare.team;
+                })
+                if (info) {
+                    let bidder = info.bidders.find(function(element){
+                        return element.name === currentSquare.bidder;
+                    })
+                    if (bidder) {
+                        bidder.totalBid += parseFloat(currentSquare.bid);
+                    } else {
+                        let bidder = { name: currentSquare.bidder, totalBid: parseFloat(currentSquare.bid) }
+                        info.bidders.push(bidder);
+                    }
+                }
+            }
+        }
+        return bidderInfo;
+    }
+
     popupHint(hint) {
         alert(hint);
     }
@@ -453,12 +499,14 @@ class Bid extends React.Component {
             let row = { team: teams[i], teamTag: teamTag, score: scores[i] }
             scoreTable.push(row);
         }
+        let teamBidders = this.getTeamBidders();
         if (this.state.displayBid) {
             return (
                 <div>
                     <MainNavbar
                         pool={currentBalance}
                         accountIcon={accountIcon}
+                        onWithdrawClick={() => this.withdrawBalance()}
                     />
                     <div className="bid-panel" id="land-info">
                         <LandInfo
@@ -493,6 +541,7 @@ class Bid extends React.Component {
                             teams={scoreTable}
                             selectTeam={this.state.team}
                             onSelectTeam={(team) => this.selectTeam(team)}
+                            teamBidders={teamBidders}
                         />
                     </div>
                 </div>

@@ -2,8 +2,6 @@ import React from 'react'
 
 import Square from './Square'
 
-import { BOARD_ROWS } from '../constants';
-import { BOARD_COLUMNS } from '../constants';
 import { DOUBLE_POS } from '../constants';
 import { TRIPPLE_POS } from '../constants';
 import { POINTS_POS } from '../constants';
