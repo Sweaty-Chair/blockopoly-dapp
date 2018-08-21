@@ -7,9 +7,17 @@ function TeamScore(props) {
     const teamTag = props.teamTag;
     const selectTeam = props.selectTeam;
     let bidders = props.bidders;
+    if (bidders) {
+        bidders.sort(function(a, b) {
+            if (a.totalBid > b.totalBid) return -1;
+            if (a.totalBid < b.totalBid) return 1;
+            return 0;
+        })
+    }
     let bidderIcons = [];
     if (bidders) {
-        for (let i = 0; i < bidders.length; ++i) {
+        let rank = Math.min(3, bidders.length);
+        for (let i = 0; i < rank; ++i) {
             let icon = makeBlockie(bidders[i].name);
             let bidder = <img className="bidder-icon" src={icon} key={i} alt='User' />;
             bidderIcons.push(bidder);
@@ -28,9 +36,7 @@ function TeamScore(props) {
         <div className={divClass} onClick={props.onClick}>
             <div className={iconClass}>{teamTag}</div>
             <p className="team-score-text">Score: {score}</p>
-            <div className="bidder-icon-container">
-                {bidderIcons}
-            </div>
+            {bidderIcons}
         </div>
     );
 }
