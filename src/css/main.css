@@ -23,6 +23,7 @@
     width: 25px;
     height: 25px;
     margin-left: 10px;
+    vertical-align: top;
   }
   
   .board-row {

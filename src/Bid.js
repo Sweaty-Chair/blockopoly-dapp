@@ -326,14 +326,9 @@ class Bid extends React.Component {
 
     bidCountdown() {
         const t = bidEndTime.getTime() - new Date().getTime();
-        let info;
-        if (t < 0) {
-            info = "Auction Closed";
-        } else {
-            info = "Ends in: " + Math.floor(t / (1000 * 60 * 60 * 24)) + "d " + Math.floor((t % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)) + "h " + Math.floor((t % (1000 * 60 * 60)) / (1000 * 60)) + "m " + Math.floor((t % (1000 * 60)) / 1000) + "s";
-        }
+
         this.setState({
-            timeLeft: info,
+            timeLeft: t,
         })
     }
 
@@ -568,6 +563,16 @@ class Bid extends React.Component {
             scoreTable.push(row);
         }
         let teamBidders = this.getTeamBidders();
+
+        let timeInfo;
+        let t = this.state.timeLeft;
+        if (t < 0) {
+            timeInfo = "Auction Closed";
+        } else {
+            timeInfo = "Ends in: " + Math.floor(t / (1000 * 60 * 60 * 24)) + "d " + Math.floor((t % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)) + "h " + Math.floor((t % (1000 * 60 * 60)) / (1000 * 60)) + "m " + Math.floor((t % (1000 * 60)) / 1000) + "s";
+        }
+        let toggleBid = t > 0;
+
         if (this.state.displayBid) {
             return (
                 <div>
@@ -578,7 +583,7 @@ class Bid extends React.Component {
                     />
                     <div className="bid-panel" id="land-info">
                         <LandInfo
-                            timeLeft={this.state.timeLeft}
+                            timeLeft={timeInfo}
                             jackpot={jackpot}
                             landDes={landDes}
                             onCloseClick={() => this.toggleBidPage(false)}
@@ -604,12 +609,14 @@ class Bid extends React.Component {
                             currentSquarePrice={currentSquarePrice}
                             scores={scores}
                             bidderIcon={squareBidder}
+                            toggle={toggleBid}
                         />
                         <TeamScoreTable
                             teams={scoreTable}
                             selectTeam={this.state.team}
                             onSelectTeam={(team) => this.selectTeam(team)}
                             teamBidders={teamBidders}
+                            toggle={toggleBid}
                         />
                     </div>
                 </div>

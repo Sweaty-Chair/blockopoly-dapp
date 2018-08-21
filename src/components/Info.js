@@ -25,25 +25,29 @@ class Info extends React.Component {
         if (!this.props.bidderIcon) {
             bidderIconClassName += " hidden";
         }
-        return (
-            <div className="dark">
-                <div className="bid-table">
-                    <div>
-                        <img className="vertical-icon" src='position.png' alt="Position"/>
-                        <span className="position-text"> ({row}, </span>
-                        <span className="position-text">{column})</span>
-                        <span className="current-bid-text">{currentSquareInfo}</span>
-                        <img className={bidderIconClassName} src={this.props.bidderIcon} alt='User' />
-                    </div>
-                    <div>
-                        <input className="bid-input" type="number" placeholder="input price..." value={bidPrice} onChange={this.handleBidChange}>
-                        </input>
-                        <button className="bid-button" onClick={this.props.onClick}>Bid</button>
+        if (this.props.toggle) {
+            return (
+                <div className="dark">
+                    <div className="bid-table">
+                        <div>
+                            <img className="vertical-icon" src='position.png' alt="Position"/>
+                            <span className="position-text"> ({row}, </span>
+                            <span className="position-text">{column})</span>
+                            <span className="current-bid-text">{currentSquareInfo}</span>
+                            <img className={bidderIconClassName} src={this.props.bidderIcon} alt='User' />
+                        </div>
+                        <div>
+                            <input className="bid-input" type="number" placeholder="input price..." value={bidPrice} onChange={this.handleBidChange}>
+                            </input>
+                            <button className="bid-button" onClick={this.props.onClick}>Bid</button>
 
+                        </div>
                     </div>
                 </div>
-            </div>
-        );
+            );
+        } else {
+            return (null);
+        }
     }
 }
 

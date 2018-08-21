@@ -34,15 +34,19 @@ class TeamScoreTable extends React.Component {
                 />
             );
         }
-        return (
-            <div className="dark">
-                <div className="bid-table">
-                    <div>
-                        {rows}
+        if (this.props.toggle) {
+            return (
+                <div className="dark">
+                    <div className="bid-table">
+                        <div>
+                            {rows}
+                        </div>
                     </div>
                 </div>
-            </div>
-        );
+            );
+        } else {
+            return (null);
+        }
     }
 }
 
