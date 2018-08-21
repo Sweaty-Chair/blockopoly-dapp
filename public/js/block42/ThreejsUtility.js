@@ -14,6 +14,7 @@ var distance = 400000;
 var inclination = 0;
 
 class ThreejsUtility {
+
 	static init() {
 		// build up the threejs environment
 		container = document.createElement("div");
@@ -31,8 +32,6 @@ class ThreejsUtility {
 			2000
 		);
 		camera.position.set(145, 716, 1050); // Set our position to look down on environment
-
-		//
 
 		var ambientLight = new THREE.AmbientLight(0xcccccc, 0.8);
 		scene.add(ambientLight);
@@ -64,26 +63,19 @@ class ThreejsUtility {
 	}
 
 	static animate() {
-		//Update User Controls
+		// Update User Controls
 		var time = performance.now() / 1000;
 		deltatime = time - lastTime;
 
-		ThreejsUtility.UpdateSky();
+		ThreejsUtility.updateSky();
 
-		if (player ) {     //If our player exists
-
-			if (Index.worldLoaded && !player.isActive) {    //And our world is loaded
-				player.SetPlayerActive(true); //Set our player to active
-			}
-
-
-			if (player.isActive) {
-				player.Update(deltatime);//Update our controls using a deltatime
-			}
+		if (player) { // If our player exists
+			if (window.worldLoaded && !player.isActive)    //And our world is loaded
+				player.setPlayerActive(true) //Set our player to active
+			if (player.isActive)
+				player.update(deltatime);//Update our controls using a deltatime
 		}
 
-		//
-		//stats.update();
 		ThreejsUtility.render();
 		requestAnimationFrame(ThreejsUtility.animate);
 		lastTime = time;
@@ -94,8 +86,6 @@ class ThreejsUtility {
 		composer.render();
 		//renderer.render( scene, camera );
 	}
-
-	//#region Skybox
 
 	static InitSky() {
 		//Add Sky
@@ -113,7 +103,7 @@ class ThreejsUtility {
 		scene.add(sunSphere);
 	}
 
-	static UpdateSky() {
+	static updateSky() {
 		var uniforms = sky.material.uniforms;
 		uniforms.turbidity.value = 10;
 		uniforms.rayleigh.value = 0.65;
@@ -129,10 +119,9 @@ class ThreejsUtility {
 		uniforms.sunPosition.value.copy(sunSphere.position);
 	}
 
-	//#endregion
 }
 
-window.onresize = function() {
+window.onresize = function () {
 	camera.aspect = window.innerWidth / window.innerHeight;
 	camera.updateProjectionMatrix();
 	renderer.setSize(window.innerWidth, window.innerHeight);

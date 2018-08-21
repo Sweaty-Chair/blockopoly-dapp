@@ -34,19 +34,16 @@
     <script src="js/threejs/threejsplugin/OutlinePass.js"></script>
 
     <!--the library we write-->
-    <!-- <script src="js/Block42.js"></script> -->
     <script src="js/block42/ThreejsUtility.js"></script>
     <script src="js/block42/customOutline.js"></script>
-    <script src="js/block42/Index.js"></script>
     <script src="js/block42/ObjLoaderUtils.js"></script>
 	  <script src="js/block42/ModelBuilder.js"></script>
     <script src="js/block42/Player.js"></script>
-    <script src="js/block42/Land.js"></script>
 	  <script src="js/block42/UIManager.js"></script>
 	  <script src="js/block42/customFPS3.js"></script>
-    <script src="js/block42/bundle.js"></script>
+    <script src="js/block42/main.js"></script>
 
-	<!--vox.js-->
+	  <!--vox.js-->
     <script src="js/voxjs/vox.min.js"></script> 
 
     <script src="js/mikolalysenko(optMesh)/monotone.js" type="text/javascript"></script>
@@ -66,7 +63,8 @@
       </label>
   </div>
     <script>
-      Index.initVox();
+      window.worldLoaded = false
+      window.ObjLoaderUtils = ObjLoaderUtils // Let React use
     </script>
   </body>
 </html>

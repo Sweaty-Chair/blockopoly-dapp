@@ -1,14 +1,17 @@
 import React from 'react'
-import LandPotAuctionContract from '../build/contracts/LandPotAuction.json'
 import getWeb3 from './utils/getWeb3'
 import makeBlockie from 'ethereum-blockies-base64'
 
-import MainNavbar from './components/MainNavbar.js'
-import TopAlert from './components/TopAlert.js'
-import Board from './components/Board.js'
+import MainNavbar from './components/MainNavbar'
+import TopAlert from './components/TopAlert'
+import Board from './components/Board'
 import TeamScoreTable from './components/TeamScoreTable'
 import Info from './components/Info'
 import LandInfo from './components/LandInfo'
+
+// require('js/block42/ObjLoaderUtils.js')
+import LandPotAuctionContract from '../build/contracts/LandPotAuction.json'
+import BidLandContract from '../build/contracts/BidLand.json'
 
 import './css/oswald.css'
 import './css/open-sans.css'
@@ -22,6 +25,8 @@ import { TRIPPLE_POS } from './constants';
 import { POINTS_POS } from './constants';
 import { END_DATE } from './constants';
 
+const contract = require('truffle-contract')
+
 var bidEndTime = END_DATE;
 
 class Bid extends React.Component {
@@ -31,7 +36,7 @@ class Bid extends React.Component {
         this.bidCountdown = this.bidCountdown.bind(this);
         this.updateScores = this.updateScores.bind(this);
         this.checkAccounts = this.checkAccounts.bind(this);
-        this.updateContractDetail = this.updateContractDetail.bind(this);
+        this.updateAuctionInfo = this.updateAuctionInfo.bind(this);
         this.showTopAlert = this.showTopAlert.bind(this);
         this.hideTopAlert = this.hideTopAlert.bind(this);
         this.toggleBidPage = this.toggleBidPage.bind(this);
@@ -42,6 +47,8 @@ class Bid extends React.Component {
             web3: null,
             accounts: [],
             landPotAuctionInstance: null,
+            bidLandInstance: null,
+            currentWorldId: 0,
             // game content
             board: { squares: Array(42).fill(null) },
             teams: ["team-A", "team-B", "team-C", "team-D"],
@@ -81,7 +88,7 @@ class Bid extends React.Component {
         this.bidCountdown();
         var interval = setInterval(this.bidCountdown, 1000);
         this.setState({countdownInterval: interval});
-        window.SetLand = this.setLand;
+        window.setLand = this.setLand;
     }
 
 
@@ -120,15 +127,14 @@ class Bid extends React.Component {
                     accounts: accounts
                 })
                 if (this.state.landPotAuction === undefined)
-                    this.initContract() // Initial contract if not yet done.
+                    this.initAuctionContract() // Initial contract if not yet done.
                 else
-                    this.updateContractDetail() // Update the UI with contract detail.
+                    this.updateAuctionInfo() // Update the UI with contract detail.
             }
         })
     }
 
-    initContract() {
-        const contract = require('truffle-contract')
+    initAuctionContract() {
         const landPotAuction = contract(LandPotAuctionContract)
         landPotAuction.setProvider(this.state.web3.currentProvider)
         // Get the contract instance.
@@ -136,13 +142,15 @@ class Bid extends React.Component {
             this.setState({
                 landPotAuctionInstance: instance
             })
-            this.updateContractDetail()
-            this.watchEvents()
+            this.updateAuctionInfo()
+            this.watchAuctionEvents()
         })
     }
 
-    updateContractDetail() {
-        // Gets plots
+    /* LandPotAuction functions */
+
+    updateAuctionInfo() {
+        // Gets plots.
         this.state.landPotAuctionInstance.getPlots().then((result) => {
             const newSquares = this.state.board.squares.slice();
             for (let i = 0; i < 42; ++i) {
@@ -165,9 +173,14 @@ class Bid extends React.Component {
         this.state.landPotAuctionInstance.balances(this.state.accounts[0]).then((result) => {
             this.setState({ balanceOfMe: this.state.web3.utils.fromWei(result.toString()) })
         })
+        // Gets the current world having auction. (Default is 0)
+        this.state.landPotAuctionInstance.currentWorldId().then((result) => {
+            this.setState({ currentWorldId: result.toNumber() })
+            this.initBidLandContract() // Only get the lands once the world is known
+        })
     }
 
-    watchEvents() {
+    watchAuctionEvents() {
         // Watches OutBid event.
         this.state.landPotAuctionInstance.Bid({ block: 'latest' }).watch((error, result) => {
             console.log(result)
@@ -183,7 +196,7 @@ class Bid extends React.Component {
                         this.showTopAlert("Good job! You out-bid " + result.args.bidder + " on (" + result.args.x + "," + result.args.y + ")! Current bid price became " + this.state.web3.utils.fromWei(result.args.currentBid.toString()) + " ETH.")
                 }
                 // Update the whole plots
-                this.updateContractDetail()
+                this.updateAuctionInfo()
             } else {
                 console.log(error)
             }
@@ -202,6 +215,61 @@ class Bid extends React.Component {
 
     withdrawBalance() {
         this.state.landPotAuctionInstance.withdraw({ from: this.state.accounts[0], gasPrice: 20e9, gas: 130000} );
+    }
+
+    /* BidLand functions */
+
+    initBidLandContract() {
+        const bidLand = contract(BidLandContract)
+        bidLand.setProvider(this.state.web3.currentProvider)
+        bidLand.deployed().then((instance) => {
+            this.setState({
+                bidLandInstance: instance
+            })
+            this.updateBidLandInfo()
+        })
+    }
+
+    updateBidLandInfo() {
+        // Gets lands within 6x7
+        for (let i = -3; i <= 3; i++) {
+            for (let j = -3; j <= 2; j++) {
+                this.state.bidLandInstance.encodeTokenId(this.state.currentWorldId, i, j).then((result) => {
+                    let tokenId = result
+                    let tokenIdString = result.toString(16).padStart(64, '0')
+                    this.state.bidLandInstance.exists(tokenId).then((result) => {
+                        if (result) {
+                            this.state.bidLandInstance.ownerOf(tokenId).then((result) => {
+                                let owner = result.toString()
+                                this.state.bidLandInstance.infoOf(tokenId).then((result) => {
+                                    window.ObjLoaderUtils.spawnLand({
+                                        tokenId: tokenIdString,
+                                        x: i,
+                                        y: j,
+                                        owner: owner,
+                                        name: result[0],
+                                        descriptionL: result[1]
+                                    })
+                                })
+                                
+                            }).catch((error) => {
+                                window.ObjLoaderUtils.spawnEmptyLand({
+                                    x: i,
+                                    y: j
+                                })
+                            })
+                        } else {
+                            window.ObjLoaderUtils.spawnEmptyLand({
+                                x: i,
+                                y: j
+                            })
+                        }
+                        if (i === 3 && j === 2)
+                            window.worldLoaded = true
+                    })
+                })
+            }
+        }
     }
     
     setLand(land) {
@@ -475,7 +543,7 @@ class Bid extends React.Component {
         let currentSquarePrice;
         let landDes = "CITY #42 - (E:4)";
         if (this.state.currentLand) {
-            landDes = this.state.currentLand._description + " (" + this.state.currentLand._x + "," + this.state.currentLand._y + ")"
+            landDes = this.state.currentLand.description + " (" + this.state.currentLand.x + "," + this.state.currentLand.y + ")"
         }
         const jackpot = this.getJackpot();
         if (currentSquare) {

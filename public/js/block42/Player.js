@@ -1,12 +1,8 @@
-//#region Enum
-
 ControlTypeEnum = {
 	Flight: 1,
 	FPS: 2,
 	Orbit: 3
 };
-
-//#endregion
 
 function Player(cameraObject, controllerType) {
 	this.cameraObject = cameraObject;
@@ -17,7 +13,7 @@ function Player(cameraObject, controllerType) {
 	this.orbitControls;
 
 	this.isActive = false;
-	
+
 	this.Listen();
 
 
@@ -26,65 +22,55 @@ function Player(cameraObject, controllerType) {
 	this.myTargetCameraPos = new THREE.Vector3();
 	this.lerpTargetPos = new THREE.Vector3();
 	this.lerpSpeed = 1.2;
-
 }
 
-//#region Main Methods
+// Main Methods
 
-Player.prototype.Initialize = function() {
-	this.InitializeControlType(this.controlType);
+Player.prototype.init = function () {
+	this.initializeControlType(this.controlType);
 };
 
-Player.prototype.Update = function(deltatime) {
-	this.UpdateController(deltatime);
-	
-	this.UpdateLerp(deltatime);
-
+Player.prototype.update = function (deltatime) {
+	this.updateController(deltatime);
+	this.updateLerp(deltatime);
 };
 
-//#endregion
-
-Player.prototype.UpdateLerp = function(deltatime) 
-{
-	if(this.isLerping)
-	{
+Player.prototype.updateLerp = function (deltatime) {
+	if (this.isLerping) {
 		//lerp camera position and target position
-		if(this.orbitControls.target.distanceTo(this.lerpTargetPos) > 1)
-		{
-			this.cameraObject.position.lerp(this.myTargetCameraPos, this.lerpSpeed*deltatime);
-			this.orbitControls.target.lerp(this.lerpTargetPos, this.lerpSpeed*deltatime);
+		if (this.orbitControls.target.distanceTo(this.lerpTargetPos) > 1) {
+			this.cameraObject.position.lerp(this.myTargetCameraPos, this.lerpSpeed * deltatime);
+			this.orbitControls.target.lerp(this.lerpTargetPos, this.lerpSpeed * deltatime);
 		}
 
 		//lerp dolly 
-		var offset = Math.abs(this.orbitControls.getSphericalRadius() -400);
+		var offset = Math.abs(this.orbitControls.getSphericalRadius() - 400);
 
-		if(Math.abs(this.orbitControls.getSphericalRadius() -400)>1)
-		{
-			if(this.orbitControls.getSphericalRadius() >400)
-				this.orbitControls.dollySet(1-(1+offset*0.02)*deltatime);
+		if (Math.abs(this.orbitControls.getSphericalRadius() - 400) > 1) {
+			if (this.orbitControls.getSphericalRadius() > 400)
+				this.orbitControls.dollySet(1 - (1 + offset * 0.02) * deltatime);
 			else
-				this.orbitControls.dollySet(1+(1+offset*0.02)*deltatime);
+				this.orbitControls.dollySet(1 + (1 + offset * 0.02) * deltatime);
 		}
 
 		this.orbitControls.update();
 
 
-		if(this.orbitControls.target.distanceTo(this.lerpTargetPos) < 2 && Math.abs(this.orbitControls.getSphericalRadius() -400)<10)
-		{
+		if (this.orbitControls.target.distanceTo(this.lerpTargetPos) < 2 && Math.abs(this.orbitControls.getSphericalRadius() - 400) < 10) {
 			this.isLerping = false;
 		}
 	}
 }
 
-//#region Input
+// Input
 
-Player.prototype.SetPlayerActive = function(bool) {
+Player.prototype.setPlayerActive = function (bool) {
 	this.isActive = bool;
 
 	if (this.isActive) {
 		//Show swap controls
 		$("#control-toggle-group").show();
-		this.SetControlType(this.controlType);
+		this.setControlType(this.controlType);
 	} else {
 		//Hide swap controls
 		$("#control-toggle-group").hide();
@@ -94,11 +80,9 @@ Player.prototype.SetPlayerActive = function(bool) {
 	}
 };
 
-//#endregion
+// Set Control Type
 
-//#region Set Control Type
-
-Player.prototype.SetControlType = function(controlType) {
+Player.prototype.setControlType = function (controlType) {
 	//Set our control type
 	this.controlType = controlType;
 	switch (this.controlType) {
@@ -122,34 +106,32 @@ Player.prototype.SetControlType = function(controlType) {
 	}
 };
 
-Player.prototype.IncrementControlType = function() {
+Player.prototype.incrementControlType = function () {
 	var tempControlType = this.controlType;
 	tempControlType = (tempControlType % 3) + 1; //Since our enum is in the value range of 1-3 we can simply modulo our number to get its value plus 1
-	this.SetControlType(tempControlType);
+	this.setControlType(tempControlType);
 
 };
 
-Player.prototype.DecrementControlType = function() {
+Player.prototype.decrementControlType = function () {
 	var tempControlType = this.controlType;
 	tempControlType = tempControlType - 1;
 	tempControlType =
 		tempControlType <= 0 ? ControlTypeEnum.Orbit : tempControlType;
-	this.SetControlType(tempControlType);
+	this.setControlType(tempControlType);
 };
 
-//#endregion
+// Initialize Control Types
 
-//#region Initialize Control Types
-
-Player.prototype.InitializeControlType = function(controllerType) {
+Player.prototype.initializeControlType = function (controllerType) {
 	//Initialize all our control types
-	this.InitializeFlightControls();
-	this.InitializeFPSControls();
-	this.InitializeOrbitControls();
-	this.SetControlType(controllerType);
+	this.initializeFlightControls();
+	this.initializeFPSControls();
+	this.initializeOrbitControls();
+	this.setControlType(controllerType);
 };
 
-Player.prototype.InitializeFlightControls = function() {
+Player.prototype.initializeFlightControls = function () {
 	this.flightControls = new THREE.FirstPersonControls(this.cameraObject);
 	this.flightControls.target = new THREE.Vector3(206, 648, 1009);
 	this.flightControls.movementSpeed = 120;
@@ -158,31 +140,29 @@ Player.prototype.InitializeFlightControls = function() {
 	this.flightControls.update(0.000001);
 };
 
-Player.prototype.InitializeOrbitControls = function() {
+Player.prototype.initializeOrbitControls = function () {
 	this.orbitControls = new THREE.OrbitControls(this.cameraObject);
 	this.orbitControls.panMinHeight = 5;
 	this.orbitControls.maxDistance = 1000;
 
 	//Set our initial position
-	this.cameraObject.position.set(210, 479, 1039);
-	this.orbitControls.target.set(404, 300, 900);
+	this.cameraObject.position.set(282, 326, 1086); // Magic numbers that at the position looking at the origin
+	this.orbitControls.target.set(630, 64, 630);
 
 	this.orbitControls.maxPolarAngle = Math.PI / 2;
 	this.orbitControls.update();
 };
 
-Player.prototype.InitializeFPSControls = function() {
+Player.prototype.initializeFPSControls = function () {
 	//Not Implemented Yet
 	this.fpsControl = new CustomFPS3(this.cameraObject);
 
 };
 
-//#endregion
+// Update Controller
 
-//#region Update Controller
+Player.prototype.updateController = function (deltaTime) {
 
-Player.prototype.UpdateController = function(deltaTime) {
-	
 	if (!this.isActive) {
 		return;
 	}
@@ -204,32 +184,28 @@ Player.prototype.UpdateController = function(deltaTime) {
 
 };
 
-//#endregion
+// Land Methods
 
-//#region Land Methods
-
-Player.prototype.GetLandsAroundPlayer = function() {
+Player.prototype.GetLandsAroundPlayer = function () {
 	//Not implemented Yet. Need a good way to use Land.js with this too. Get all lands within the player area
 	//Get all lands around player using 'this.cameraObject.position' as player position;
 };
 
-//#endregion
+// Click event
 
-//#region click event
-
-Player.prototype.Listen = function() {
+Player.prototype.Listen = function () {
 	container.addEventListener(
 		"click",//"dblclick",
-		function(e) {
-			if (!this.isActive) {return;}
+		function (e) {
+			if (!this.isActive) { return; }
 			console.log("click");
-			SetLand(outlinePass.selectedObjects[0].userData.land);
+			setLand(outlinePass.selectedObjects[0].userData.land);
 			//this is the highlighted obj
 			//console.log(outlinePass.selectedObjects[0].userData);
-			ShowInfoBox(outlinePass.selectedObjects[0].userData.land);
+			showInfoBox(outlinePass.selectedObjects[0].userData.land);
 
 			//Set our camera to orbit camera for preview
-			this.SetControlType(ControlTypeEnum.Orbit);
+			this.setControlType(ControlTypeEnum.Orbit);
 
 			//Would this be better to do the raycasting logic itself or should we jsut do as above and use the outline pass data
 			this.FocusCameraOnObject(
@@ -237,17 +213,15 @@ Player.prototype.Listen = function() {
 				new THREE.Vector3(45, 45, 45),
 				20
 			);
-			
+
 		}.bind(this),
 		false
 	);
 };
 
-//#endregion
+// Focus Camera
 
-//#region Focus Camera
-
-Player.prototype.FocusCameraOnObject = function(
+Player.prototype.FocusCameraOnObject = function (
 	object,
 	eulerRotation,
 	distance
@@ -264,7 +238,7 @@ Player.prototype.FocusCameraOnObject = function(
 	this.FocusCameraOnPosition(position, eulerRotation, distance); //Focus our camera at that position
 };
 
-Player.prototype.FocusCameraOnPosition = function(
+Player.prototype.FocusCameraOnPosition = function (
 	position,
 	eulerRotation,
 	distance
@@ -310,13 +284,9 @@ Player.prototype.FocusCameraOnPosition = function(
 			break;
 	}
 	*/
-	
+
 	this.isLerping = true;
 	this.myTargetCameraPos.copy(targetCameraPos);
 	this.lerpTargetPos.copy(position);
 
-
-	
-};
-
-//#endregion
+}

@@ -1,5 +1,6 @@
 
-function ShowInfoBox(land)
+// TODO: Use React.js for this
+function showInfoBox(land)
 {
 	if(typeof land === "undefined")
 	{
@@ -7,8 +8,7 @@ function ShowInfoBox(land)
 		$("#plotname").text("N/A");
 	}else{
 		$("#land-info").show();
-		$("#plotname").text(land._name);
-		$("#fileName").val(land._tokenId);
-		// console.log($("#fileName"));
+		$("#plotname").text(land.name);
+		$("#fileName").val(land.tokenId);
 	}
 }
