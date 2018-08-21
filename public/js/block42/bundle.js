@@ -5,16 +5,16 @@ module.exports=[
         "x": 0,
         "y": 0,
         "owner": "0x3ae7e2f63991808dedc04b2d25a5c88f874a17ad",
-        "name": "Block+42",
-        "description": "Block+42"
+        "name": "Block 42",
+        "description": "Block 42"
     },
     {
         "tokenId": "00000000ffffffffffffffffffffffffffff0000000000000000000000000000",
         "x": -1,
         "y": 0,
         "owner": "0x3ae7e2f63991808dedc04b2d25a5c88f874a17ad",
-        "name": "SweatyChair",
-        "description": "SweatyChair"
+        "name": "Sweaty Chair",
+        "description": "Sweaty Chair"
     },
     {
         "tokenId": "0000000000000000000000000000000000010000000000000000000000000000",
@@ -29,16 +29,16 @@ module.exports=[
         "x": 0,
         "y": -1,
         "owner": "0x3ae7e2f63991808dedc04b2d25a5c88f874a17ad",
-        "name": "city+ugly",
-        "description": "city+ugly"
+        "name": "City",
+        "description": "City"
     },
     {
         "tokenId": "000000000000000000000000000000000000ffffffffffffffffffffffffffff",
         "x": 0,
         "y": 1,
         "owner": "0x3ae7e2f63991808dedc04b2d25a5c88f874a17ad",
-        "name": "city+ugly",
-        "description": "city+ugly"
+        "name": "City 2",
+        "description": "City 2"
     }
 ]
 },{}],2:[function(require,module,exports){

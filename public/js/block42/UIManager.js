@@ -7,8 +7,8 @@ function ShowInfoBox(land)
 		$("#plotname").text("N/A");
 	}else{
 		$("#land-info").show();
-		$("#plotname").text(land._description);
-		$("#fileName").val(land._description +"_x"+land._x+"_y"+land._y);
+		$("#plotname").text(land._name);
+		$("#fileName").val(land._tokenId);
 		// console.log($("#fileName"));
 	}
 }

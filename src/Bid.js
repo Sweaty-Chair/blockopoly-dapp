@@ -475,7 +475,7 @@ class Bid extends React.Component {
         let currentSquarePrice;
         let landDes = "CITY #42 - (E:4)";
         if (this.state.currentLand) {
-            landDes = this.state.currentLand._description +"("+this.state.currentLand._x+","+this.state.currentLand._y + ")"
+            landDes = this.state.currentLand._description + " (" + this.state.currentLand._x + "," + this.state.currentLand._y + ")"
         }
         const jackpot = this.getJackpot();
         if (currentSquare) {
