@@ -5,6 +5,7 @@ import ReactDOM from 'react-dom'
 import Bid from './Bid'
 import Footer from './components/Footer'
 import PriceScroll from './components/PriceScroll'
+import CenterModel from './components/CenterModel'
 // import App from './App'
 
 import './css/oswald.css'
@@ -17,6 +18,7 @@ import './css/main.css'
 ReactDOM.render(
   <div>
     <Bid />
+    <CenterModel />
     <PriceScroll />
     <Footer />
   </div>,

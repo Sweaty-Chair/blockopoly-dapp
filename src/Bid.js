@@ -507,6 +507,10 @@ class Bid extends React.Component {
     }
 
     onBidClick() {
+        if (this.state.accounts[0] === undefined) {
+            window.toggleModel("Login Needed", "Please login MetaMask to play the game.");
+            return;
+        } 
         const squareId = this.state.selectedSquare;
         const teamID = this.state.team;
         const bidPrice = parseFloat(this.state.bidPrice);
