@@ -27,8 +27,6 @@ import { END_DATE } from './constants';
 
 const contract = require('truffle-contract')
 
-var bidEndTime = END_DATE;
-
 class Bid extends React.Component {
     constructor(props) {
         super(props);
@@ -36,19 +34,23 @@ class Bid extends React.Component {
         this.bidCountdown = this.bidCountdown.bind(this);
         this.updateScores = this.updateScores.bind(this);
         this.checkAccounts = this.checkAccounts.bind(this);
-        this.updateAuctionInfo = this.updateAuctionInfo.bind(this);
+        this.updatePlotsInfo = this.updatePlotsInfo.bind(this);
         this.showTopAlert = this.showTopAlert.bind(this);
         this.hideTopAlert = this.hideTopAlert.bind(this);
         this.toggleBidPage = this.toggleBidPage.bind(this);
         this.withdrawBalance = this.withdrawBalance.bind(this);
         this.setLand = this.setLand.bind(this);
         this.state = {
-            // user auth
+            // user auth and contract instances
             web3: null,
             accounts: [],
             landPotAuctionInstance: null,
             bidLandInstance: null,
+            // current auction info
             currentWorldId: 0,
+            currentLandX: 0,
+            currentLandY: 0,
+            auctionEndingDate: END_DATE,
             // game content
             board: { squares: Array(42).fill(null) },
             teams: ["team-A", "team-B", "team-C", "team-D"],
@@ -97,60 +99,66 @@ class Bid extends React.Component {
     }
 
     instantiateNetwork() {
-        // Get network ids.
+        // Get network ids
         this.state.web3.eth.net.getId().then((networkId) => {
             // console.log(networkId)
             this.setState({ netId: networkId })
             
             // Show test net warning.
-            if (this.state.netId === 3) {
-                // $('#no-mainnet-alert-text').html("Currently in <b>Ropsten Test Network</b>. Change to <b>Main Ethereum Network</b> for valid transactions.");
-            } else {
-                // $('#no-mainnet-alert-text').html("You're not connected! Open MetaMask and make sure you are on the Main Ethereum Network.");
-            }
+            // if (this.state.netId === 3) {
+            //     $('#no-mainnet-alert-text').html("Currently in <b>Ropsten Test Network</b>. Change to <b>Main Ethereum Network</b> for valid transactions.");
+            // } else {
+            //     $('#no-mainnet-alert-text').html("You're not connected! Open MetaMask and make sure you are on the Main Ethereum Network.");
+            // }
 
         })
 
-        // Check accounts changed every 5 seconds.
         this.checkAccounts()
-        setInterval(this.checkAccounts, 5000)
+        setInterval(this.checkAccounts, 30000) // Check accounts changed every 30 seconds.
     }
     
     checkAccounts() {
-        // Get accounts.
+        // Get accounts
         this.state.web3.eth.getAccounts((error, accounts) => {
+
+            // Show MetaMask not yet login warning
             // if (accounts[0] === undefined) {
-            //     // toggleMetaMaskPrompt(true)
+            //     toggleMetaMaskPrompt(true)
             // } else if (this.state.accounts.length === 0 || accounts[0] !== this.state.accounts[0]) { // Account initialized or changed
-            //     // toggleMetaMaskPrompt(false)
+            //     toggleMetaMaskPrompt(false)
             // }
+            
             this.setState({
                 accounts: accounts
             })
+
             if (this.state.landPotAuction === undefined)
                 this.initAuctionContract() // Initial contract if not yet done.
-            else
-                this.updateAuctionInfo() // Update the UI with contract detail.
         })
     }
 
     initAuctionContract() {
         const landPotAuction = contract(LandPotAuctionContract)
         landPotAuction.setProvider(this.state.web3.currentProvider)
-        // Get the contract instance.
+        // Get the contract instance
         landPotAuction.deployed().then((instance) => {
             this.setState({
                 landPotAuctionInstance: instance
             })
-            this.updateAuctionInfo()
+            this.initAuction()
             this.watchAuctionEvents()
         })
     }
 
     /* LandPotAuction functions */
 
-    updateAuctionInfo() {
-        // Gets plots.
+    initAuction() {
+        this.updatePlotsInfo()
+        this.updateAuctionInfo()
+        this.updateMyBalance()
+    }
+
+    updatePlotsInfo() {
         this.state.landPotAuctionInstance.getPlots().then((result) => {
             const newSquares = this.state.board.squares.slice();
             for (let i = 0; i < 42; ++i) {
@@ -163,25 +171,32 @@ class Bid extends React.Component {
                 board: { squares: newSquares },
             }, () => { this.updateScores() })
         })
-        // Gets the auction ending time.
-        this.state.landPotAuctionInstance.getEndingTime().then((result) => {
+    }
+
+    updateAuctionInfo() {
+        this.state.landPotAuctionInstance.getAuction().then((result) => {
+            this.setState({ currentLandX: result[0].toNumber() })
+            this.setState({ currentLandY: result[1].toNumber() })
             const endingDate = new Date(0);
-            endingDate.setUTCSeconds(result.toNumber())
-            bidEndTime = endingDate
+            endingDate.setUTCSeconds(result[2].toNumber())
+            this.setState({ auctionEndingDate: endingDate })
+
+            // Gets the current world having auction. (Default is 0)
+            this.state.landPotAuctionInstance.currentWorldId().then((result) => {
+                this.setState({ currentWorldId: result.toNumber() })
+                this.initBidLandContract() // Only get the lands once the world is known
+            })
         })
-        // Gets ETH balance of me.
+    }
+
+    updateMyBalance() {
         this.state.landPotAuctionInstance.balances(this.state.accounts[0]).then((result) => {
             this.setState({ balanceOfMe: this.state.web3.utils.fromWei(result.toString()) })
-        })
-        // Gets the current world having auction. (Default is 0)
-        this.state.landPotAuctionInstance.currentWorldId().then((result) => {
-            this.setState({ currentWorldId: result.toNumber() })
-            this.initBidLandContract() // Only get the lands once the world is known
         })
     }
 
     watchAuctionEvents() {
-        // Watches OutBid event.
+        // Watches OutBid event
         this.state.landPotAuctionInstance.Bid({ block: 'latest' }).watch((error, result) => {
             console.log(result)
             if (!error) {
@@ -196,12 +211,12 @@ class Bid extends React.Component {
                         this.showTopAlert("Good job! You out-bid " + result.args.bidder + " on (" + result.args.x + "," + result.args.y + ")! Current bid price became " + this.state.web3.utils.fromWei(result.args.currentBid.toString()) + " ETH.")
                 }
                 // Update the whole plots
-                this.updateAuctionInfo()
+                this.updatePlotsInfo()
             } else {
                 console.log(error)
             }
         })
-        // Withdraw event
+        // Watches Withdraw event
         this.state.landPotAuctionInstance.Withdraw({ block: 'latest' }).watch((error, result) => {
             if (!error) {
                 this.state.landPotAuctionInstance.balances(this.state.accounts[0]).then((result) => {
@@ -253,16 +268,10 @@ class Bid extends React.Component {
                                 })
                                 
                             }).catch((error) => {
-                                window.ObjLoaderUtils.spawnEmptyLand({
-                                    x: i,
-                                    y: j
-                                })
+                                this.spawnEmptyLand(i, j)
                             })
                         } else {
-                            window.ObjLoaderUtils.spawnEmptyLand({
-                                x: i,
-                                y: j
-                            })
+                            this.spawnEmptyLand(i, j)
                         }
                         if (i === 3 && j === 2)
                             window.worldLoaded = true
@@ -270,6 +279,21 @@ class Bid extends React.Component {
                 })
             }
         }
+    }
+
+    spawnEmptyLand(x, y) {
+        if (x === this.state.currentLandX && y === this.state.currentLandY)
+            window.ObjLoaderUtils.spawnAuctionLand({
+                x: x,
+                y: y,
+                name: "Auction Land"
+            })
+        else
+            window.ObjLoaderUtils.spawnEmptyLand({
+                x: x,
+                y: y,
+                name: "Empty Land"
+            })
     }
     
     setLand(land) {
@@ -325,7 +349,7 @@ class Bid extends React.Component {
       }
 
     bidCountdown() {
-        const t = bidEndTime.getTime() - new Date().getTime();
+        const t = this.state.auctionEndingDate.getTime() - new Date().getTime();
 
         this.setState({
             timeLeft: t,
@@ -538,7 +562,7 @@ class Bid extends React.Component {
         let currentSquarePrice;
         let landDes = "CITY #42 - (E:4)";
         if (this.state.currentLand) {
-            landDes = this.state.currentLand.description + " (" + this.state.currentLand.x + "," + this.state.currentLand.y + ")"
+            landDes = this.state.currentLand.name + " (" + this.state.currentLand.x + "," + this.state.currentLand.y + ")"
         }
         const jackpot = this.getJackpot();
         if (currentSquare) {

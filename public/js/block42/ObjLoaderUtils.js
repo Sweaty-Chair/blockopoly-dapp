@@ -42,6 +42,10 @@ class ObjLoaderUtils {
 		ObjLoaderUtils.spawnLandVox('./assets/models/land_empty.vox', land, onComplete)
 	}
 
+	static spawnAuctionLand(land, onComplete) {
+		ObjLoaderUtils.spawnLandVox('./assets/models/land_auction.vox', land, onComplete)
+	}
+
 	static spawnLandVox(voxPath, land, onComplete) {
 
 		var parser = new vox.Parser();

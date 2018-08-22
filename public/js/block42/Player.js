@@ -146,7 +146,7 @@ Player.prototype.initializeOrbitControls = function () {
 	this.orbitControls.maxDistance = 1000;
 
 	//Set our initial position
-	this.cameraObject.position.set(282, 326, 1086); // Magic numbers that at the position looking at the origin
+	this.cameraObject.position.set(342, 374, 1096); // Magic numbers that at the position looking at the origin
 	this.orbitControls.target.set(630, 64, 630);
 
 	this.orbitControls.maxPolarAngle = Math.PI / 2;
