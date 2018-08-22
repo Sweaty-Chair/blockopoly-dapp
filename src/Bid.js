@@ -77,7 +77,7 @@ class Bid extends React.Component {
 
             }).then(() => {
                 // Instantiate contract once web3 provided.
-                this.instantiateContract()
+                this.instantiateNetwork()
             })
             .catch(() => {
                 console.log('Error finding web3.')
@@ -96,7 +96,7 @@ class Bid extends React.Component {
         clearInterval(this.state.countdownInterval);
     }
 
-    instantiateContract() {
+    instantiateNetwork() {
         // Get network ids.
         this.state.web3.eth.net.getId().then((networkId) => {
             // console.log(networkId)
@@ -119,18 +119,18 @@ class Bid extends React.Component {
     checkAccounts() {
         // Get accounts.
         this.state.web3.eth.getAccounts((error, accounts) => {
-            if (accounts[0] === undefined) {
-                // toggleMetaMaskPrompt(true)
-            } else if (this.state.accounts.length === 0 || accounts[0] !== this.state.accounts[0]) { // Account initialized or changed
-                // toggleMetaMaskPrompt(false)
-                this.setState({
-                    accounts: accounts
-                })
-                if (this.state.landPotAuction === undefined)
-                    this.initAuctionContract() // Initial contract if not yet done.
-                else
-                    this.updateAuctionInfo() // Update the UI with contract detail.
-            }
+            // if (accounts[0] === undefined) {
+            //     // toggleMetaMaskPrompt(true)
+            // } else if (this.state.accounts.length === 0 || accounts[0] !== this.state.accounts[0]) { // Account initialized or changed
+            //     // toggleMetaMaskPrompt(false)
+            // }
+            this.setState({
+                accounts: accounts
+            })
+            if (this.state.landPotAuction === undefined)
+                this.initAuctionContract() // Initial contract if not yet done.
+            else
+                this.updateAuctionInfo() // Update the UI with contract detail.
         })
     }
 
