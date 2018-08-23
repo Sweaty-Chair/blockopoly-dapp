@@ -1,7 +1,8 @@
 ![Block42](http://assets.block42.world/images/icons/block42_logo_200.png)
-[![Build Status](https://img.shields.io/travis/Block42World/landpot-dapp.svg?branch=master&style=flat-square)](https://travis-ci.org/Block42World/landpot-dapp)
 
 # Landpot Web DApp
+
+[![Build Status](https://img.shields.io/travis/Block42World/landpot-dapp.svg?branch=master)](https://travis-ci.org/Block42World/landpot-dapp)
 
 A complete web DApp for land jackpot buying.
 
@@ -96,8 +97,6 @@ To use this crowdsale page for your token ICO, change the token and crowdsale co
 - [Ethereum Kovan Faucet](https://gitter.im/kovan-testnet/faucet)
 
 ## TODO
-- Fix contract event feedback currently not working with MetaMask
 - Add better graphic for MetaMask install instruction
 - Add CoverAlls badge
 [![Coverage Status](https://img.shields.io/coveralls/github/Block42World/landpot-dapp/master.svg?style=flat-square)](https://coveralls.io/github/Block42World/landpot-dapp?branch=master)
-- Add [Ethereum Blockies Base64](https://www.npmjs.com/package/ethereum-blockies-base64) as player icon
