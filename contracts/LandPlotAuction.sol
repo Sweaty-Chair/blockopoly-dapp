@@ -10,7 +10,7 @@ import "./BidLandBasic.sol";
 * @dev A auction for bidding plots and create ERC721 land on bidding completed.
 */
 
-contract LandPotAuction is Pausable {
+contract LandPlotAuction is Pausable {
   using SafeMath for uint256;
   
   // Represents an auction of a land

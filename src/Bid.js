@@ -10,7 +10,7 @@ import Info from './components/Info'
 import LandInfo from './components/LandInfo'
 
 // require('js/block42/ObjLoaderUtils.js')
-import LandPotAuctionContract from '../build/contracts/LandPotAuction.json'
+import LandPlotAuctionContract from '../build/contracts/LandPlotAuction.json'
 import BidLandContract from '../build/contracts/BidLand.json'
 
 import './css/oswald.css'
@@ -138,7 +138,7 @@ class Bid extends React.Component {
     }
 
     initAuctionContract() {
-        const landPotAuction = contract(LandPotAuctionContract)
+        const landPotAuction = contract(LandPlotAuctionContract)
         landPotAuction.setProvider(this.state.web3.currentProvider)
         // Get the contract instance
         landPotAuction.deployed().then((instance) => {
@@ -150,7 +150,7 @@ class Bid extends React.Component {
         })
     }
 
-    /* LandPotAuction functions */
+    /* LandPlotAuction functions */
 
     initAuction() {
         this.updatePlotsInfo()

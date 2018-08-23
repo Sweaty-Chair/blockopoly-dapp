@@ -1178,7 +1178,7 @@ contract Land is ERC721Token, Pausable, LandBasic {
   /**
    * @dev Creates a batch of lands for sale, only from authorized addresses.
    */
-  function create(uint32 _worldId, int64[] _xs, int64[] _ys) public onlyAuthorized(_worldId) {
+  function createBatch(uint32 _worldId, int64[] _xs, int64[] _ys) public onlyAuthorized(_worldId) {
     for(uint i = 0; i < _xs.length; i++) {
       if (isValidPosition(_worldId, _xs[i], _ys[i]))
         create(_worldId, _xs[i], _ys[i]);
@@ -1226,7 +1226,7 @@ contract Land is ERC721Token, Pausable, LandBasic {
    * @dev Returns an URI for a given position.
    * @dev Throws if the land at the position does not exist. May return an empty string.
    */
-  function tokenURI(uint32 _worldId, int64 _x, int64 _y) public view returns (string) {
+  function landURI(uint32 _worldId, int64 _x, int64 _y) public view returns (string) {
     return tokenURI(encodeTokenId(_worldId, _x, _y));
   }
 

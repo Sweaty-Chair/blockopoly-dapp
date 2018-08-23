@@ -1,6 +1,6 @@
 var World = artifacts.require("./World.sol");
 var BidLand = artifacts.require("./BidLand.sol");
-var LandPotAuction = artifacts.require("./LandPotAuction.sol");
+var LandPlotAuction = artifacts.require("./LandPlotAuction.sol");
 
 module.exports = (deployer, network, accounts) => {
   let bidLandInstance
@@ -19,9 +19,9 @@ module.exports = (deployer, network, accounts) => {
                       return bidLandInstance.setInfo(0, 0, 1, "City Building", "Reserved space for future co-operatives.").then((error, result) => {
                         return bidLandInstance.create(0, 0, -1, { from: accounts[0] }).then((error, result) => {
                           return bidLandInstance.setInfo(0, 0, -1, "Apartment", "Reserved space for future co-operatives.").then((error, result) => {
-                            return LandPotAuction.deployed().then((instance) => {
+                            return LandPlotAuction.deployed().then((instance) => {
                               landPotAuctionInstance = instance
-                              return bidLandInstance.authorize(LandPotAuction.address).then(() => {
+                              return bidLandInstance.authorize(LandPlotAuction.address).then(() => {
                                 landPotAuctionInstance.startAuction(1, 1, { from: accounts[0] }) // Create auction on (1,1)
                               })
                             })

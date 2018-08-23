@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import LandPotAuctionContract from '../build/contracts/LandPotAuction.json'
+import LandPlotAuctionContract from '../build/contracts/LandPlotAuction.json'
 import getWeb3 from './utils/getWeb3'
 
 import './css/oswald.css'
@@ -70,7 +70,7 @@ class App extends Component {
 
   initContract() {
     const contract = require('truffle-contract')
-    const landPotAuction = contract(LandPotAuctionContract)
+    const landPotAuction = contract(LandPlotAuctionContract)
     landPotAuction.setProvider(this.state.web3.currentProvider)
     // Get the contract instance.
     landPotAuction.deployed().then((instance) => {
