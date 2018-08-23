@@ -343,3 +343,7 @@
     position: relative;
     bottom: -3px;
   }
+
+  .hide {
+    display: none;
+  }
