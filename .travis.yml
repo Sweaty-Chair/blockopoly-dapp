@@ -2,14 +2,14 @@ sudo: required
 dist: trusty
 language: node_js
 node_js:
-  - '10.7.0'
+  - "10"
 install:
   - npm install -g truffle ganache-cli
   - npm install
 script:
   - truffle test
 before_script:
-  - ganache-cli --port 7545 /dev/null &
+  - ganache-cli --port 7545 2> /dev/null 1> /dev/null &
   - sleep 5
 after_script:
   - npm run coverage && cat coverage/lcov.info | coveralls
