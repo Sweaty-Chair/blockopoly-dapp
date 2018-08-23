@@ -1,4 +1,5 @@
 ![Block42](http://assets.block42.world/images/icons/block42_logo_200.png)
+[![Build Status](https://img.shields.io/travis/Block42World/landpot-dapp.svg?branch=master&style=flat-square)](https://travis-ci.org/Block42World/landpot-dapp)
 
 # Landpot Web DApp
 
@@ -97,8 +98,6 @@ To use this crowdsale page for your token ICO, change the token and crowdsale co
 ## TODO
 - Fix contract event feedback currently not working with MetaMask
 - Add better graphic for MetaMask install instruction
-- Add Travis CI badge
-[![Build Status](https://img.shields.io/travis/Block42World/landpot-dapp.svg?branch=master&style=flat-square)](https://travis-ci.org/Block42World/landpot-dapp)
 - Add CoverAlls badge
 [![Coverage Status](https://img.shields.io/coveralls/github/Block42World/landpot-dapp/master.svg?style=flat-square)](https://coveralls.io/github/Block42World/landpot-dapp?branch=master)
 - Add [Ethereum Blockies Base64](https://www.npmjs.com/package/ethereum-blockies-base64) as player icon

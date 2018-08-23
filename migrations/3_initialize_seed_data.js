@@ -22,7 +22,7 @@ module.exports = (deployer, network, accounts) => {
                             return LandPlotAuction.deployed().then((instance) => {
                               landPotAuctionInstance = instance
                               return bidLandInstance.authorize(LandPlotAuction.address).then(() => {
-                                landPotAuctionInstance.startAuction(1, 1, { from: accounts[0] }) // Create auction on (1,1)
+                                return landPotAuctionInstance.startAuction(1, 1, { from: accounts[0] }) // Create auction on (1,1)
                               })
                             })
                           })
