@@ -222,6 +222,7 @@ contract Land is ERC721Token, Pausable, LandBasic {
    * @param _tokenId uint256 ID of the token to query.
    */
   function tokenURI(uint256 _tokenId) public view returns (string) {
+    require(exists(_tokenId), "Token ID not exists.");
     bytes memory uriByte = bytes(tokenURIs[_tokenId]);
     if (uriByte.length == 0) {
       (uint32 world, int64 x, int64 y) = decodeTokenId(_tokenId);

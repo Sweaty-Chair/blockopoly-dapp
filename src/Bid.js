@@ -263,10 +263,9 @@ class Bid extends React.Component {
                                         y: j,
                                         owner: owner,
                                         name: result[0],
-                                        descriptionL: result[1]
+                                        description: result[1]
                                     })
                                 })
-                                
                             }).catch((error) => {
                                 this.spawnEmptyLand(i, j)
                             })
@@ -286,7 +285,9 @@ class Bid extends React.Component {
             window.ObjLoaderUtils.spawnAuctionLand({
                 x: x,
                 y: y,
-                name: "Auction Land"
+                name: "Auction Land",
+                // isAuction: true
+                owner: "0x0" // 0x0 to indicate auction land
             })
         else
             window.ObjLoaderUtils.spawnEmptyLand({

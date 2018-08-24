@@ -16,12 +16,10 @@ The ownership of the land is a ERC721 token and will be owned by the owner in li
 
 Please note that this is still in prototype and under heavy development. The final product may be subject to a number of quality assurance tests to verify conformance with specifications.
 
-<!-- - Working in both Main Ethereum Network and Ropsten Test Network -->
-<!-- - Working with MetaMask, local and Infura nodes are commented and can be used for debugging -->
 - Prototype from [Truffle Box React](https://github.com/truffle-box/react-box)
 - [Bootstrap v4.1.3](https://getbootstrap.com/)
 - [Web3.js v1.0 beta 35](https://web3js.readthedocs.io/en/1.0/web3.html)
-- [OpenZeppelin v1.11.0](https://github.com/OpenZeppelin/openzeppelin-solidity) solidity framework for best security and stability
+- [OpenZeppelin v1.12.0](https://github.com/OpenZeppelin/openzeppelin-solidity) solidity framework for best security and stability
 
 ## Getting Started
 
@@ -99,4 +97,4 @@ To use this crowdsale page for your token ICO, change the token and crowdsale co
 ## TODO
 - Add better graphic for MetaMask install instruction
 - Add CoverAlls badge
-[![Coverage Status](https://img.shields.io/coveralls/github/Block42World/landpot-dapp/master.svg?style=flat-square)](https://coveralls.io/github/Block42World/landpot-dapp?branch=master)
+[![Coverage Status](https://img.shields.io/coveralls/github/Block42World/landpot-dapp/master.svg)](https://coveralls.io/github/Block42World/landpot-dapp?branch=master)
