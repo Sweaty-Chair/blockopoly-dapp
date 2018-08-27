@@ -8,6 +8,7 @@ import Board from './components/Board'
 import TeamScoreTable from './components/TeamScoreTable'
 import Info from './components/Info'
 import LandInfo from './components/LandInfo'
+import LandInfoWindow from './components/LandInfoWindow'
 
 // require('js/block42/ObjLoaderUtils.js')
 import LandPlotAuctionContract from '../build/contracts/LandPlotAuction.json'
@@ -64,6 +65,7 @@ class Bid extends React.Component {
             topAlertContent: "",
             topAlertType: "",
             displayBid: false,
+            displayLandInfoWindow: false,
             currentLand: null,
         }
     }
@@ -298,10 +300,17 @@ class Bid extends React.Component {
     }
     
     setLand(land) {
+        let displayLandInfoWindow = false;
+        if (land != null) {
+            if (land.owner !== "0x0") {
+                displayLandInfoWindow = true;
+            }
+        }
+        this.toggleLandInfoWindow(displayLandInfoWindow);
         this.setState({
             currentLand: land,
         }, () => {
-            if (land) {
+            if (land && land.owner === "0x0") {
                 this.toggleBidPage(true);
             } else {
                 this.toggleBidPage(false);
@@ -312,6 +321,12 @@ class Bid extends React.Component {
     toggleBidPage(toggle) {
         this.setState({
             displayBid: toggle,
+        })
+    }
+
+    toggleLandInfoWindow(toggle) {
+        this.setState({
+            displayLandInfoWindow: toggle,
         })
     }
 
@@ -659,10 +674,17 @@ class Bid extends React.Component {
             );
         } else {
             return (
-                <MainNavbar
-                    pool={currentBalance}
-                    accountIcon={accountIcon}
-                />
+                <div>
+                    <MainNavbar
+                        pool={currentBalance}
+                        accountIcon={accountIcon}
+                    />
+                    <LandInfoWindow
+                        land={this.state.currentLand}
+                        display={this.state.displayLandInfoWindow}
+                        onCloseClick={() => this.toggleLandInfoWindow(false)}
+                    />
+                </div>
             );
         }
         
