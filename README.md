@@ -32,6 +32,9 @@ Please note that this is still in prototype and under heavy development. The fin
 npm install
 ```
 
+### Setup enviroment
+Mneonmic is used to generate the same wallets every time for easier testing. For security reason, you have to put in your own mneonmic from either Metamask or Geneche. Rename .env.example to .env, put your Mnenonmic and Infura API Key (if you deploy to testnet).
+
 ### Blockchain smart contract development
 
 Run the Truffle development console
@@ -71,6 +74,11 @@ To build the application for production, use the build command. A production bui
 npm run build
 ```
 
+(Optional) This project utilizes [gh-pages](https://www.npmjs.com/package/gh-pages) to deploy to GitHub Pages for demo purpose.
+```
+npm run deploy
+```
+
 ## Deployed demo
 - [Github Page](https://block42world.github.io/landpot-dapp/)
 
@@ -89,8 +97,7 @@ To use this crowdsale page for your token ICO, change the token and crowdsale co
 
 ## Helper Links
 - [GitHub Page Demo](https://block42world.github.io/landpot-dapp/)
-- [Ethereum Ropsten Faucet 1](https://faucet.metamask.io/)
-- [Ethereum Ropsten Faucet 2](http://faucet.ropsten.be:3001/)
+- [Ethereum Ropsten Faucet](http://faucet.ropsten.be:3001/)
 - [Ethereum Rinkeby Faucet](http://rinkeby-faucet.com)
 - [Ethereum Kovan Faucet](https://gitter.im/kovan-testnet/faucet)
 

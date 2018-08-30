@@ -4,13 +4,13 @@ require('dotenv').config({silent: true})
 module.exports = {
   networks: {
     development: {
-      host: "127.0.0.1",
-      port: 7545, // Ganache
+      host: "localhost",
+      port: 8545, // Ganache
       network_id: "*", // Match any network id
     },
     richard: {
       host: "192.168.100.177",
-      port: 7545, // Ganache
+      port: 8545, // Ganache
       network_id: "*", // Match any network id
     },
     ropsten: {
