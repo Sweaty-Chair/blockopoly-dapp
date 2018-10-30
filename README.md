@@ -1,8 +1,8 @@
 ![Block42](http://assets.block42.world/images/icons/block42_logo_200.png)
 
-# Landpot Web DApp
+# Blockopoly Web DApp
 
-[![Build Status](https://img.shields.io/travis/Block42World/landpot-dapp.svg?branch=master)](https://travis-ci.org/Block42World/landpot-dapp)
+[![Build Status](https://img.shields.io/travis/sweatyc/blockopoly-dapp.svg?branch=master)](https://travis-ci.org/sweatyc/blockopoly-dapp)
 
 A complete web DApp for land jackpot buying.
 
@@ -80,10 +80,8 @@ npm run deploy
 ```
 
 ## Deployed demo
-- [Github Page](https://block42world.github.io/landpot-dapp/)
+- [Github Page](https://sweatyc.github.io/blockopoly-dapp/)
 
-<!-- ## Modification
-To use this crowdsale page for your token ICO, change the token and crowdsale contract address at [main.js](main.js). Then includes the truffle built JSONs, or simple change the ABI at [Cubik.json](js/Cubik.json) and [CubikCrowdsale.json](js/CubikCrowdsale.json). -->
 
 ## Terminology For Dummies
 - [Truffle](http://truffleframework.com/) - A development framework for Ethereum for writing, deploying and testing smart contract solidity scripts
