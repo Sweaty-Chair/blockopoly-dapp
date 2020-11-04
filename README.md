@@ -14,6 +14,8 @@ After all 42 lands are sold, the game enters free-trade period for another week.
 
 The ownership of the land is a ERC721 token and will be owned by the owner in life time. Owners of the lands can customize and create building of the land, which will be part of Block42 world and will receive income from the interaction with Block42 players.
 
+![Blockopoly DApp screenshot](https://repository-images.githubusercontent.com/142818648/ab550600-1efc-11eb-9fce-0f6630b75059)
+
 Please note that this is still in prototype and under heavy development. The final product may be subject to a number of quality assurance tests to verify conformance with specifications.
 
 - Prototype from [Truffle Box React](https://github.com/truffle-box/react-box)
